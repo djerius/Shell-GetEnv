@@ -14,4 +14,4 @@ t/testenv.csh
 t/testenv.ksh
 t/testenv.sh
 t/testenv.tcsh
-META.yml                                 Module meta-data (added by MakeMaker)
+
