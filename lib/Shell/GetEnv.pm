@@ -397,9 +397,6 @@ sub envs
     return \%env;
 }
 
-my $MAGIC_CHARS;
-
-BEGIN {  ( $MAGIC_CHARS = q/\\\$"'!*{};()[]/ ) =~ s/(\W)/\\$1/g; }
 
 sub _shell_escape
 {
@@ -427,10 +424,10 @@ sub _shell_escape
     $str =~ s/(^|[^\\])''/$1/g;
   }
 
-  # otherwise, quote all of the magic characters
+  # otherwise, quote all of the non-word characters
   else
   {
-    $str =~  s/([$MAGIC_CHARS])/\\$1/go;
+    $str =~  s/(\W)/\\$1/go;
   }
 
   $str;
