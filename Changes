@@ -1,5 +1,8 @@
 Revision history for Perl extension Shell::GetEnv.
 
+0.02  Sun Sep 16 22:19:48 EDT 2007
+        - fix handling of magic characters in envstr
+
 0.01  Thu Aug  2 16:15:08 2007
 	- original version, based upon unpublished GrabEnv module
 

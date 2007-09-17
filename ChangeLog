@@ -1,5 +1,27 @@
-2007-08-08  Diab Jerius  <djerius@cfa.harvard.edu>
+2007-09-16  Diab Jerius  <djerius@cfa.harvard.edu>
 
-	Tag: 0.01
-	* initial release
+	Tag: 0.02
+
+2007-09-16 22:14 -0400  djerius  <djerius@cfa.harvard.edu>  (383b9c4df3c6 [tip])
+
+	* lib/Shell/GetEnv.pm:
+	magic char escaping was incomplete; use simpler method
+
+2007-08-08 13:16 -0400  djerius  <djerius@cfa.harvard.edu>  (8eb4d853871d)
+
+	* MANIFEST:
+	remove META.yml from manifest
+
+2007-08-08 13:11 -0400  djerius  <djerius@cfa.harvard.edu>  (5dd7afb68de3)
+
+	* .hgtags:
+	Added tag 0.01 for changeset fd7926f7abaa
+
+2007-08-08 13:11 -0400  djerius  <djerius@cfa.harvard.edu>  (fd7926f7abaa [0.01])
+
+	* ChangeLog, Changes, LICENSE, MANIFEST, Makefile.PL, README,
+	lib/Shell/GetEnv.pm, t/00Shell-GetEnv.t, t/envstr.t, t/exclude.t,
+	t/import_envs.t, t/redirect.t, t/testenv.bash, t/testenv.csh,
+	t/testenv.ksh, t/testenv.sh, t/testenv.tcsh:
+	initial version
 
