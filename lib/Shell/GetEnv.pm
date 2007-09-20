@@ -29,7 +29,7 @@ use Carp;
 use File::Temp;
 use Shell::GetEnv::Dumper;
 
-our $VERSION = '0.03';
+our $VERSION = '0.03_1';
 
 
 # a compendium of shells
