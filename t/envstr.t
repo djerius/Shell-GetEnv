@@ -1,13 +1,16 @@
+#!perl
 use strict;
 use warnings;
 
 use Test::More;
+use Time::Out qw( timeout );
+my $timeout_time = $ENV{TIMEOUT_TIME} || 10;
 
 use Env::Path;
 
 if ( Env::Path->PATH->Whence( 'env' ) )
 {
-    plan tests => 2;
+    plan tests => 3;
 }
 else
 {
@@ -17,30 +20,47 @@ else
 use Shell::GetEnv;
 
 
-$ENV{SHELL_GETENV_TEST} = 1;
-my $env = Shell::GetEnv->new( 'sh',  ". t/testenv.sh", { Startup => 0 } );
+my %opt = ( Startup => 0,
+	    Verbose => 1,
+	    STDERR => 't/envstr.stderr',
+	    STDOUT => 't/envstr.stdout' );
 
-# test DiffsOnly, but only if env accepts -u
+$ENV{SHELL_GETENV_TEST} = 1;
+my $env = timeout $timeout_time => 
+  sub { Shell::GetEnv->new( 'sh',  ". t/testenv.sh", \%opt ) };
+
+my $err = $@;
+ok ( ! $err, "run subshell" ) 
+      or diag( "unexpected time out: $err\n",
+	       "please check $opt{STDOUT} and $opt{STDERR} for possible clues\n" );
+
 SKIP:
 {
-    # cheat and redirect stream i/o using the object. depends upon
-    # Redirect => 1, which is the default.
-    # THIS IS NOT APPROVED CODE.
-    $env->_stream_redir();
-    my $env_bad = system( 'env', '-u SHELL_GETENV_TEST' );
-    $env->_stream_reset();
+    skip "failed subprocess run", 2 if $err;
 
-    skip "env doesn't support -u flag", 1 if $env_bad;
+
+    # test DiffsOnly, but only if env accepts -u
+  SKIP:
+  {
+      # cheat and redirect stream i/o using the object. depends upon
+      # Redirect => 1, which is the default.
+      # THIS IS NOT APPROVED CODE.
+      $env->_stream_redir();
+      my $env_bad = system( 'env', '-u SHELL_GETENV_TEST' );
+      $env->_stream_reset();
+
+      skip "env doesn't support -u flag", 1 if $env_bad;
       
 
-    my $envstr = $env->envs( EnvStr => 1, DiffsOnly => 1 );
-    chomp( my $res = `env $envstr $^X -e 'print \$ENV{SHELL_GETENV}'` );
-    is( $res ,'sh', "envstr: DiffsOnly " );
-}
+      my $envstr = $env->envs( EnvStr => 1, DiffsOnly => 1 );
+      chomp( my $res = `env $envstr $^X -e 'print \$ENV{SHELL_GETENV}'` );
+      is( $res ,'sh', "envstr: DiffsOnly " );
+  }
 
-{
-    my $envstr = $env->envs( EnvStr => 1);
-    chomp( my $res = `env -i $envstr $^X -e 'print ! exists \$ENV{SHELL_GETENV_TEST}'` );
-    is( $res ,'1', "envstr: unset" );
-}
+  {
+      my $envstr = $env->envs( EnvStr => 1);
+      chomp( my $res = `env -i $envstr $^X -e 'print ! exists \$ENV{SHELL_GETENV_TEST}'` );
+      is( $res ,'1', "envstr: unset" );
+  }
 
+}

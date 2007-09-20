@@ -1,10 +1,19 @@
-use Test::More tests => 26;
-BEGIN { use_ok('Shell::GetEnv') };
+#!perl
+use Test::More tests => 36;
+
+BEGIN {
+    diag "The following tests may take some time.  Please be patient\n";
+    use_ok('Shell::GetEnv') 
+}
+;
 
 use strict;
 use warnings;
 
 use Env::Path;
+
+use Time::Out qw( timeout );
+my $timeout_time = $ENV{TIMEOUT_TIME} || 10;
 
 my %source = ( 
    tcsh => 'source',
@@ -12,6 +21,7 @@ my %source = (
    sh   => '.',
    ksh  => '.',
    bash => '.' );
+
 
 my $path = Env::Path->PATH;
 for my $shell ( qw( bash csh sh ksh tcsh ) )
@@ -21,24 +31,38 @@ for my $shell ( qw( bash csh sh ksh tcsh ) )
       # make sure the shell exists
       skip "Can't find shell $shell\n", 5, unless $path->Whence( $shell );
 
-      my %opt;#( Verbose => 0, Echo => 0, Redirect => 1, Debug => 1);
+      my %opt = ( Verbose => 1 );
 
       for my $startup ( 0, 1 )
       {
 	  $ENV{SHELL_GETENV_TEST} = 1;
     
+          my %opt = %opt;
+
 	  $opt{Startup} = $startup;
+	  $opt{STDOUT} = "t/run.$shell.$startup.stdout";
+	  $opt{STDERR} = "t/run.$shell.$startup.stderr";
 
-	  my $env = Shell::GetEnv->new( $shell, 
-					$source{$shell} . " t/testenv.$shell",
-					\%opt
-				      );
+	  my $env = timeout $timeout_time => sub { 
+	      Shell::GetEnv->new( $shell, 
+				  $source{$shell} . " t/testenv.$shell",
+				  \%opt,
+				);
+	  };
 
-	  my $envs = $env->envs;
-	  ok( ! exists $envs->{SHELL_GETENV_TEST},
-	      "$shell: startup=$startup; unset" );
-	  ok(  $envs->{SHELL_GETENV} eq $shell,
-	       "$shell: startup=$startup;   set" );
+	  my $err = $@;
+	  ok ( ! $err, "$shell: startup=$startup; run subshell" ) 
+	    or diag( "unexpected time out: $err\n",
+		     "please check $opt{STDOUT} and $opt{STDERR} for possible clues\n" );
+
+	SKIP:{
+	      skip "failed subprocess run", 2 if $err;
+	      my $envs = $env->envs;
+	      ok( ! exists $envs->{SHELL_GETENV_TEST},
+		  "$shell: startup=$startup; unset" );
+	      ok(  $envs->{SHELL_GETENV} eq $shell,
+		   "$shell: startup=$startup;   set" );
+	  }
       }
 
 

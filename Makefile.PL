@@ -13,6 +13,7 @@ requires 'IO::File';
 
 build_requires 'Test::More';
 build_requires 'Env::Path';
+build_requires 'Time::Out';
 
 auto_install;
 
