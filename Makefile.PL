@@ -10,6 +10,7 @@ requires 'File::Temp';
 requires 'File::Spec';
 requires 'Expect';
 requires 'IO::File';
+requires 'Storable';
 
 build_requires 'Test::More';
 build_requires 'Env::Path';
