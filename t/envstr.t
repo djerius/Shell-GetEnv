@@ -1,12 +1,9 @@
-use Test::More;
-BEGIN { use_ok('Shell::GetEnv') };
-
 use strict;
 use warnings;
 
+use Test::More;
+
 use Env::Path;
-
-
 
 if ( Env::Path->PATH->Whence( 'env' ) )
 {
@@ -16,6 +13,8 @@ else
 {
     plan skip_all => "'env' command not in path";
 }
+
+use Shell::GetEnv;
 
 
 $ENV{SHELL_GETENV_TEST} = 1;
