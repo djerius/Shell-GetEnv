@@ -1,5 +1,11 @@
 Revision history for Perl extension Shell::GetEnv.
 
+0.03  Thu Sep 20 13:34:35 EDT 2007
+        - use Storable to save/retrieve %ENV; avoid eval's and extra
+	  YAML module
+	- use wrapper script to clean up sub-shell command to save %ENV
+	- add timeouts to tests to prevent possible infinite hangs
+
 0.02  Sun Sep 16 22:19:48 EDT 2007
         - fix handling of magic characters in envstr
 

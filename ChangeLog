@@ -1,8 +1,70 @@
-2007-09-16  Diab Jerius  <djerius@cfa.harvard.edu>
+2007-09-20  Diab Jerius  <djerius@cfa.harvard.edu>
 
-	Tag: 0.02
+	Tag: 0.03
 
-2007-09-16 22:14 -0400  djerius  <djerius@cfa.harvard.edu>  (383b9c4df3c6 [tip])
+2007-09-20 16:28 -0400  djerius  <djerius@cfa.harvard.edu>  (85c4767f1496 [tip])
+
+	* MANIFEST.SKIP:
+	more cruft not to ship
+
+2007-09-20 16:28 -0400  djerius  <djerius@cfa.harvard.edu>  (6d9161ce696b)
+
+	* Makefile.PL, t/00Shell-GetEnv.t, t/envstr.t, t/exclude.t,
+	t/import_envs.t, t/redirect.t:
+	kill tests if they hang for more than 10 seconds; save test STDERR &
+	STDOUT
+
+	In order to ensure that tests don't hang because of bizarrities in
+	the user's shell profiles, cause tests to timeout after 10 seconds.
+	The shell output is now saved (previously it was discarded).
+
+2007-09-20 13:33 -0400  djerius  <djerius@cfa.harvard.edu>  (4487b0e5a324)
+
+	* Makefile.PL:
+	use Module::Install & prune now unneeded modules requirements
+
+2007-09-20 13:33 -0400  djerius  <djerius@cfa.harvard.edu>  (40842ac6660a)
+
+	* MANIFEST:
+	MANIFEST should be regenerated and not stored
+
+2007-09-20 13:32 -0400  djerius  <djerius@cfa.harvard.edu>  (f75d76f7e2b0)
+
+	* MANIFEST.SKIP:
+	remove cruft from MANIFEST
+
+2007-09-20 13:32 -0400  djerius  <djerius@cfa.harvard.edu>  (d1e1db5b68f7)
+
+	* t/00-load.t, t/perlcritic.t, t/pod-coverage.t, t/pod.t:
+	more standard pod/perlcritic tests
+
+2007-09-20 13:30 -0400  djerius  <djerius@cfa.harvard.edu>  (b34ac281d8bf)
+
+	* lib/Shell/GetEnv.pm, lib/Shell/GetEnv/Dumper.pm:
+	use Storable instead of YAML::Tiny or Data::Dumper. wrap Storable in
+	script
+
+	* use of Data::Dumper required eval; use Storable to avoid this
+	* no longer require YAML::Tiny either
+	* wrap call to Storable in script to avoid complex shell command
+	* fix documentation pod bug
+
+2007-09-20 10:42 -0400  djerius  <djerius@cfa.harvard.edu>  (941497c51fbd)
+
+	* t/envstr.t:
+	make compatible with Test::More v0.71
+
+2007-09-16 22:25 -0400  djerius  <djerius@cfa.harvard.edu>  (e2dd2321dee5)
+
+	* .hgtags:
+	Added tag 0.02 for changeset 5acaee4a4529
+
+2007-09-16 22:25 -0400  djerius  <djerius@cfa.harvard.edu>  (5acaee4a4529 [0.02])
+
+	* ChangeLog, Changes, MANIFEST, lib/Shell/GetEnv.pm:
+	update for release
+
+2007-09-16 22:14 -0400  djerius  <djerius@cfa.harvard.edu>  (383b9c4df3c6)
 
 	* lib/Shell/GetEnv.pm:
 	magic char escaping was incomplete; use simpler method
