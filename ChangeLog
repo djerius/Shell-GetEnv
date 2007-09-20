@@ -2,7 +2,17 @@
 
 	Tag: 0.03
 
-2007-09-20 16:28 -0400  djerius  <djerius@cfa.harvard.edu>  (85c4767f1496 [tip])
+2007-09-20 16:31 -0400  djerius  <djerius@cfa.harvard.edu>  (763b716a1842 [tip])
+
+	* Makefile.PL:
+	Storable is now a requirement
+
+2007-09-20 16:30 -0400  djerius  <djerius@cfa.harvard.edu>  (691cbeb3dd84)
+
+	* ChangeLog, Changes, lib/Shell/GetEnv.pm, lib/Shell/GetEnv/Dumper.pm:
+	update for release
+
+2007-09-20 16:28 -0400  djerius  <djerius@cfa.harvard.edu>  (85c4767f1496)
 
 	* MANIFEST.SKIP:
 	more cruft not to ship
