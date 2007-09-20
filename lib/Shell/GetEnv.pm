@@ -26,15 +26,8 @@ use warnings;
 
 use Carp;
 
-my $DumpModule;
-
-BEGIN {
-    # prefer YAML::Tiny as its smaller and all we really need
-    eval 'require YAML::Tiny';
-    $DumpModule = $@ ? 'Data::Dumper' : 'YAML::Tiny';
-}
-
 use File::Temp;
+use Shell::GetEnv::Dumper;
 
 our $VERSION = '0.02';
 
@@ -178,12 +171,11 @@ sub _dumper_script
 {
     my ( $self, $filename ) = @_;
 
-    my $dumpscript;
-
-    return 'YAML::Tiny' eq $DumpModule 
-      ? sprintf( q{%s -MYAML::Tiny=DumpFile -e 'DumpFile( "%s", \%%ENV)'}, $^X, $filename )
-      : sprintf( q{%s -MData::Dumper -e 'open(F,">","%s")||exit(1);print F Data::Dumper->Dump([\%%ENV],["ENV"])'},
-		 $^X, $filename );
+    # this invokes the module directly, using the Perl which was
+    # used to invoke the parent process.  It uses the fact that we
+    # use()'d Shell::GetEnv::Dumper and Perl stored the absolute path
+    # to it in %INC;
+    return qq{$^X '$INC{'Shell/GetEnv/Dumper.pm'}' $filename};
 }
 
 
@@ -298,23 +290,7 @@ sub _retrieve_env
 {
     my ( $self, $filename ) = @_;
 
-    if ( 'YAML::Tiny' eq $DumpModule )
-    {
-	( $self->{envs} ) = YAML::Tiny::LoadFile( $filename );
-    }
-
-    else
-    {
-	require IO::File;
-	my $fh = new IO::File $filename, 'r'
-	  or croak( __PACKAGE__, ": unable to open env file: $filename" );
-
-	# suck in the entire file as one line.
-	local $/;
-	my $res = <$fh>;
-	$self->{envs} = eval { eval $res; };
-	croak $@ if $@;
-    }
+    $self->{envs} = Shell::GetEnv::Dumper::read_envs( $filename );
 }
 
 # return variables
@@ -502,7 +478,9 @@ returned either as a hash or as a string suitable for use with the
 
 =head1 METHODS
 
-=over new
+=over
+
+=item new
 
   $env = Shell::GetEnv->new( $shell, @cmds, \%attrs );
 
