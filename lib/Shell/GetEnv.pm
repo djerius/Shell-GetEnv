@@ -41,6 +41,12 @@ my %shells = (
 		       Echo      => 'x',
 		      },
 
+	      dash => {
+		       Interactive     => 'i',
+		       Verbose   => 'v',
+		       Echo      => 'x',
+		      },
+
 	      sh => {
 		     Interactive     => 'i',
 		     Verbose   => 'v',
@@ -74,7 +80,7 @@ my %Opts = ( Startup => 1,
 	     Debug => 0,
 	     Echo    => 0,
 	     Verbose => 0,
-	     Interactive => 1,
+	     Interactive => 0,
 	     Redirect => 1,
 	     STDERR  => undef,
 	     STDOUT  => undef,
@@ -233,15 +239,19 @@ sub _shell_options
 	  qw( NoStartup Echo Verbose Interactive )
 	    ;
 
-    # bundled options are those without the leading hyphen
-    my @bundled = grep{ ! /^-/ } @options;
+    # bundled options are those without a leading hyphen or plus
+    my %options = map { ( $_ => 1 ) } @options;
+    my @bundled = grep{ ! /^[-+]/ } keys %options;
+    delete @options{@bundled};
+
     my $bundled = @bundled ? '-' . join( '', @bundled ) : undef;
 
     # long options; bash treats these differently
-    my @longopts = grep{ /^--/ } @options;
+    my @longopts = grep{ /^--/ } keys %options;
+    delete @options{@longopts};
 
     # everything else
-    my @otheropts = grep { /^-[^-]/ } @options;
+    my @otheropts = keys %options;
 
     $self->{ShellOptions} =
 			[ 
@@ -517,7 +527,9 @@ B<STDOUT> attribute is used.  It defaults to I<false>.
 
 =item Interactive I<boolean>
 
-If true, put the shell in interactive mode.  It defaults to I<true>.
+If true, put the shell in interactive mode. Some shells do not react
+well when put in interactive mode but not connected to terminals.
+Try using the B<Expect> option instead. This defaults to I<false>.
 
 =item Redirect I<boolean>
 
