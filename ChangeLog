@@ -1,8 +1,40 @@
-2007-09-20  Diab Jerius  <djerius@cfa.harvard.edu>
+2007-09-21  Diab Jerius  <djerius@cfa.harvard.edu>
 
-	Tag: 0.03_1
+	Tag: 0.04
 
-2007-09-20 16:31 -0400  djerius  <djerius@cfa.harvard.edu>  (763b716a1842 [tip])
+2007-09-21 11:23 -0400  djerius  <djerius@cfa.harvard.edu>  (a194024ff325 [tip])
+
+	* lib/Shell/GetEnv.pm:
+	add dash support. turn off default Interactive mode.
+
+	dash is used on some platforms as the default system shell (i.e. it
+	masquerades as /bin/sh). dash will suspend itself if it is put into
+	interactive mode (via the -i option) and is not connected to a
+	terminal. because of this, the default is to *not* put the shell in
+	interactive mode. If interactive mode is required, use the Expect
+	mode.
+
+2007-09-21 11:17 -0400  djerius  <djerius@cfa.harvard.edu>  (a003bfb75105)
+
+	* t/00Shell-GetEnv.t, t/testenv.dash:
+	fix skipped test count, added dash to tests
+
+2007-09-20 21:05 -0400  djerius  <djerius@cfa.harvard.edu>  (e150c7a1d50c)
+
+	* .hgtags:
+	Added tag 0.03_1 for changeset 99ada61c4510
+
+2007-09-20 16:40 -0400  djerius  <djerius@cfa.harvard.edu>  (99ada61c4510 [0.03_1])
+
+	* ChangeLog, lib/Shell/GetEnv.pm, lib/Shell/GetEnv/Dumper.pm:
+	make it a developer's version
+
+2007-09-20 16:32 -0400  djerius  <djerius@cfa.harvard.edu>  (db2ef1a799d3)
+
+	* ChangeLog:
+	update for release
+
+2007-09-20 16:31 -0400  djerius  <djerius@cfa.harvard.edu>  (763b716a1842)
 
 	* Makefile.PL:
 	Storable is now a requirement

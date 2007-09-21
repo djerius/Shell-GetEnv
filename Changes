@@ -1,5 +1,11 @@
 Revision history for Perl extension Shell::GetEnv.
 
+0.04  Fri Sep 21 11:29:07 EDT 2007
+        - add support for dash
+	- Interactive mode is no longer the default due to bad
+	  interactions with dash, which is the default /bin/sh on
+	  some systems.
+
 0.03  Thu Sep 20 13:34:35 EDT 2007
         - use Storable to save/retrieve %ENV; avoid eval's and extra
 	  YAML module
