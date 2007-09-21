@@ -1,11 +1,10 @@
 #!perl
-use Test::More tests => 36;
+use Test::More tests => 43;
 
 BEGIN {
     diag "The following tests may take some time.  Please be patient\n";
-    use_ok('Shell::GetEnv') 
+    use_ok('Shell::GetEnv')
 }
-;
 
 use strict;
 use warnings;
@@ -15,21 +14,23 @@ use Env::Path;
 use Time::Out qw( timeout );
 my $timeout_time = $ENV{TIMEOUT_TIME} || 10;
 
-my %source = ( 
-   tcsh => 'source',
-   csh  => 'source',
-   sh   => '.',
-   ksh  => '.',
-   bash => '.' );
+my %source = (
+	      bash => '.',
+	      csh  => 'source',
+	      dash => '.',
+	      ksh  => '.',
+	      sh   => '.',
+	      tcsh => 'source',
+	     );
 
 
 my $path = Env::Path->PATH;
-for my $shell ( qw( bash csh sh ksh tcsh ) )
+for my $shell ( keys %source )
 {
   SKIP:
   {
       # make sure the shell exists
-      skip "Can't find shell $shell\n", 5, unless $path->Whence( $shell );
+      skip "Can't find shell $shell\n", 7, unless $path->Whence( $shell );
 
       my %opt = ( Verbose => 1 );
 
