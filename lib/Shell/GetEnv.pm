@@ -356,7 +356,7 @@ sub envs
     if ( $opt{DiffsOnly} )
     {
 	my @delkeys =
-	  grep { exists $ENV{$_} && $env{$_} ne $ENV{$_} } keys %env;
+	  grep { exists $ENV{$_} && $env{$_} eq $ENV{$_} } keys %env;
 
 	delete @env{@delkeys};
     }
