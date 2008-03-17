@@ -233,11 +233,16 @@ sub _shell_options
 
     my $shell = $shells{$self->{Shell}};
 
+    ## no critic (ProhibitAccessOfPrivateData)
+
     my @options = 
       map { $shell->{$_} }
 	grep { exists $shell->{$_} && $self->{$_} }
 	  qw( NoStartup Echo Verbose Interactive )
 	    ;
+
+    ## use critic
+
 
     # bundled options are those without a leading hyphen or plus
     my %options = map { ( $_ => 1 ) } @options;
