@@ -1,5 +1,9 @@
 Revision history for Perl extension Shell::GetEnv.
 
+0.05  Mon Mar 17 12:03:56 EDT 2008
+        - DiffsOnly option to envs returned the inverse of what
+	  it was supposed to.
+
 0.04  Fri Sep 21 11:29:07 EDT 2007
         - add support for dash
 	- Interactive mode is no longer the default due to bad

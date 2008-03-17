@@ -1,8 +1,32 @@
-2007-09-21  Diab Jerius  <djerius@cfa.harvard.edu>
+2008-03-17  Diab Jerius  <djerius@cfa.harvard.edu>
 
-	Tag: 0.04
+	Tag 0.05
 
-2007-09-21 11:23 -0400  djerius  <djerius@cfa.harvard.edu>  (a194024ff325 [tip])
+2008-03-17 12:03 -0400  djerius  <djerius@cfa.harvard.edu>  (f850a99d700b [tip])
+
+	* lib/Shell/GetEnv.pm:
+	quiet Perl::Critic
+
+2008-03-17 12:03 -0400  djerius  <djerius@cfa.harvard.edu>  (f5c54a086baa)
+
+	* lib/Shell/GetEnv.pm, t/diffsonly.t:
+	envs( DiffsOnly => 1) returned the inverse of what it was supposed
+	to
+
+	* logic test was reveresed
+	* added test
+
+2007-09-21 11:35 -0400  djerius  <djerius@cfa.harvard.edu>  (39d7ff470565)
+
+	* .hgtags:
+	Added tag 0.04 for changeset 490ec85ed036
+
+2007-09-21 11:35 -0400  djerius  <djerius@cfa.harvard.edu>  (490ec85ed036 [0.04])
+
+	* ChangeLog, Changes, lib/Shell/GetEnv.pm, lib/Shell/GetEnv/Dumper.pm:
+	update for release
+
+2007-09-21 11:23 -0400  djerius  <djerius@cfa.harvard.edu>  (a194024ff325)
 
 	* lib/Shell/GetEnv.pm:
 	add dash support. turn off default Interactive mode.

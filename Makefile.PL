@@ -4,6 +4,7 @@ use inc::Module::Install;
 
 name 'Shell-GetEnv';
 
+license 'gpl3';
 all_from 'lib/Shell/GetEnv.pm';
 
 requires 'File::Temp';
