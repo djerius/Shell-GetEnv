@@ -1,8 +1,25 @@
-2008-03-17  Diab Jerius  <djerius@cfa.harvard.edu>
+2008-03-21  Diab Jerius  <djerius@cfa.harvard.edu>
 
-	Tag 0.05
+	Tag 0.06
 
-2008-03-17 12:03 -0400  djerius  <djerius@cfa.harvard.edu>  (f850a99d700b [tip])
+2008-03-21 18:08 -0400  djerius  <djerius@cfa.harvard.edu>  (8efbdbc342e2 [tip])
+
+	* Makefile.PL:
+	require Perl 5.8.0 or higher. Changes to make this backwards
+	compatible to 5.6.2 are too extensive.
+
+2008-03-17 12:07 -0400  djerius  <djerius@cfa.harvard.edu>  (09ea6ae926cf)
+
+	* .hgtags:
+	Added tag 0.05 for changeset 7970675b3814
+
+2008-03-17 12:06 -0400  djerius  <djerius@cfa.harvard.edu>  (7970675b3814 [0.05])
+
+	* ChangeLog, Changes, Makefile.PL, lib/Shell/GetEnv.pm,
+	lib/Shell/GetEnv/Dumper.pm:
+	update for release
+
+2008-03-17 12:03 -0400  djerius  <djerius@cfa.harvard.edu>  (f850a99d700b)
 
 	* lib/Shell/GetEnv.pm:
 	quiet Perl::Critic

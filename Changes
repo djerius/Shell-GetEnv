@@ -1,5 +1,9 @@
 Revision history for Perl extension Shell::GetEnv.
 
+0.06  Fri Mar 21 18:06:50 EDT 2008
+        - require Perl 5.8.0 or higher.  Changes to make this
+	  backwards compatible to 5.6.2 are too extensive.
+
 0.05  Mon Mar 17 12:03:56 EDT 2008
         - DiffsOnly option to envs returned the inverse of what
 	  it was supposed to.
