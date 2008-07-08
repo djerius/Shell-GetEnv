@@ -12,7 +12,7 @@ use warnings;
 use Env::Path;
 
 use Time::Out qw( timeout );
-my $timeout_time = $ENV{TIMEOUT_TIME} || 10;
+my $timeout_time = $ENV{TIMEOUT_TIME} || 30;
 
 my %source = (
 	      bash => '.',
@@ -37,7 +37,7 @@ for my $shell ( keys %source )
       for my $startup ( 0, 1 )
       {
 	  $ENV{SHELL_GETENV_TEST} = 1;
-    
+
           my %opt = %opt;
 
 	  $opt{Startup} = $startup;
@@ -73,6 +73,7 @@ for my $shell ( keys %source )
 	skip "Expect module not available", 1, if $@;
 
 	local $opt{Expect} = 1;
+        local $opt{Timeout} = $timeout_time;
 
 	my $env = Shell::GetEnv->new( $shell, 
 				      $source{$shell} . " t/testenv.$shell",
