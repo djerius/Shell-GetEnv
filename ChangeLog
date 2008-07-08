@@ -1,8 +1,29 @@
-2008-03-21  Diab Jerius  <djerius@cfa.harvard.edu>
+2008-07-07  Diab Jerius  <djerius@cfa.harvard.edu>
 
-	Tag 0.06
+	Tag 0.07
 
-2008-03-21 18:08 -0400  djerius  <djerius@cfa.harvard.edu>  (8efbdbc342e2 [tip])
+2008-07-07 23:19 -0400  djerius  <djerius@cfa.harvard.edu>  (c7a413100357 [tip])
+
+	* Makefile.PL:
+	use Module::Install to check for perl version
+
+2008-07-07 23:14 -0400  djerius  <djerius@cfa.harvard.edu>  (f9cb615c6bb6)
+
+	* t/00Shell-GetEnv.t:
+	Expect tests sometimes fail, seems to be they timeout. Boost
+	timeout to 30 seconds and pass value to Expect
+
+2008-03-21 18:10 -0400  djerius  <djerius@cfa.harvard.edu>  (f152d9395f84)
+
+	* .hgtags:
+	Added tag 0.06 for changeset 7cbbb01332de
+
+2008-03-21 18:10 -0400  djerius  <djerius@cfa.harvard.edu>  (7cbbb01332de [0.06])
+
+	* ChangeLog, Changes, lib/Shell/GetEnv.pm, lib/Shell/GetEnv/Dumper.pm:
+	update for release
+
+2008-03-21 18:08 -0400  djerius  <djerius@cfa.harvard.edu>  (8efbdbc342e2)
 
 	* Makefile.PL:
 	require Perl 5.8.0 or higher. Changes to make this backwards
@@ -26,6 +47,7 @@
 
 2008-03-17 12:03 -0400  djerius  <djerius@cfa.harvard.edu>  (f5c54a086baa)
 
+	* t/diffsonly.t: new file.
 	* lib/Shell/GetEnv.pm, t/diffsonly.t:
 	envs( DiffsOnly => 1) returned the inverse of what it was supposed
 	to
@@ -57,6 +79,7 @@
 
 2007-09-21 11:17 -0400  djerius  <djerius@cfa.harvard.edu>  (a003bfb75105)
 
+	* t/testenv.dash: new file.
 	* t/00Shell-GetEnv.t, t/testenv.dash:
 	fix skipped test count, added dash to tests
 
@@ -108,21 +131,25 @@
 
 2007-09-20 13:33 -0400  djerius  <djerius@cfa.harvard.edu>  (40842ac6660a)
 
+	* MANIFEST: deleted file.
 	* MANIFEST:
 	MANIFEST should be regenerated and not stored
 
 2007-09-20 13:32 -0400  djerius  <djerius@cfa.harvard.edu>  (f75d76f7e2b0)
 
+	* MANIFEST.SKIP: new file.
 	* MANIFEST.SKIP:
 	remove cruft from MANIFEST
 
 2007-09-20 13:32 -0400  djerius  <djerius@cfa.harvard.edu>  (d1e1db5b68f7)
 
+	* t/00-load.t, t/perlcritic.t, t/pod-coverage.t, t/pod.t: new file.
 	* t/00-load.t, t/perlcritic.t, t/pod-coverage.t, t/pod.t:
 	more standard pod/perlcritic tests
 
 2007-09-20 13:30 -0400  djerius  <djerius@cfa.harvard.edu>  (b34ac281d8bf)
 
+	* lib/Shell/GetEnv/Dumper.pm: new file.
 	* lib/Shell/GetEnv.pm, lib/Shell/GetEnv/Dumper.pm:
 	use Storable instead of YAML::Tiny or Data::Dumper. wrap Storable in
 	script
@@ -159,11 +186,16 @@
 
 2007-08-08 13:11 -0400  djerius  <djerius@cfa.harvard.edu>  (5dd7afb68de3)
 
+	* .hgtags: new file.
 	* .hgtags:
 	Added tag 0.01 for changeset fd7926f7abaa
 
 2007-08-08 13:11 -0400  djerius  <djerius@cfa.harvard.edu>  (fd7926f7abaa [0.01])
 
+	* ChangeLog, Changes, LICENSE, MANIFEST, Makefile.PL, README,
+	lib/Shell/GetEnv.pm, t/00Shell-GetEnv.t, t/envstr.t, t/exclude.t,
+	t/import_envs.t, t/redirect.t, t/testenv.bash, t/testenv.csh,
+	t/testenv.ksh, t/testenv.sh, t/testenv.tcsh: new file.
 	* ChangeLog, Changes, LICENSE, MANIFEST, Makefile.PL, README,
 	lib/Shell/GetEnv.pm, t/00Shell-GetEnv.t, t/envstr.t, t/exclude.t,
 	t/import_envs.t, t/redirect.t, t/testenv.bash, t/testenv.csh,
