@@ -1,5 +1,4 @@
 
-require 5.008000;
 
 use strict;
 use warnings;
@@ -7,6 +6,7 @@ use inc::Module::Install;
 
 name 'Shell-GetEnv';
 
+perl_version '5.008000';
 license 'gpl3';
 all_from 'lib/Shell/GetEnv.pm';
 
