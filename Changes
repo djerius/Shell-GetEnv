@@ -1,5 +1,8 @@
 Revision history for Perl extension Shell::GetEnv.
 
+0.08  Wed Jul  9 08:50:54 EDT 2008
+        - fix to quiet Perl::Critic::Compatibility 
+
 0.07  Mon Jul  7 23:11:47 EDT 2008
         - tests of Expect interface seem to sometimes time out too
 	  early, so increase test timeout from 10 to 30 seconds.  

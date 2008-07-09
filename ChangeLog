@@ -1,8 +1,24 @@
-2008-07-07  Diab Jerius  <djerius@cfa.harvard.edu>
+2008-07-09  Diab Jerius  <djerius@cfa.harvard.edu>
 
-	Tag 0.07
+	Tag 0.08
 
-2008-07-07 23:19 -0400  djerius  <djerius@cfa.harvard.edu>  (c7a413100357 [tip])
+2008-07-09 08:50 -0400  djerius  <djerius@cfa.harvard.edu>  (1cb91108c4e3 [tip])
+
+	* lib/Shell/GetEnv.pm:
+	explicitly require a Perl version that supports three-valued open to
+	quiet Perll::Critic::Compatibility
+
+2008-07-07 23:20 -0400  djerius  <djerius@cfa.harvard.edu>  (878af1272150)
+
+	* .hgtags:
+	Added tag 0.07 for changeset b54ec65c3b88
+
+2008-07-07 23:20 -0400  djerius  <djerius@cfa.harvard.edu>  (b54ec65c3b88 [0.07])
+
+	* ChangeLog, Changes, lib/Shell/GetEnv.pm, lib/Shell/GetEnv/Dumper.pm:
+	update logs and version for release
+
+2008-07-07 23:19 -0400  djerius  <djerius@cfa.harvard.edu>  (c7a413100357)
 
 	* Makefile.PL:
 	use Module::Install to check for perl version
