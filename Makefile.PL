@@ -10,6 +10,8 @@ perl_version '5.008000';
 license 'gpl3';
 all_from 'lib/Shell/GetEnv.pm';
 
+author_tests( 'xt' );
+
 requires 'File::Temp';
 requires 'File::Spec';
 requires 'Expect';
