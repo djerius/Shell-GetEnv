@@ -11,6 +11,7 @@ license 'gpl3';
 all_from 'lib/Shell/GetEnv.pm';
 
 author_tests( 'xt' );
+author_requires 'Test::CPAN::Changes';
 
 requires 'File::Temp';
 requires 'File::Spec';
