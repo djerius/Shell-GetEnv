@@ -28,7 +28,7 @@ ok ( ! $err, "run subshell" )
 SKIP: {
     skip "failed subprocess run", 2 if $err;
 
-    $envs = $env->envs( Exclude => 'SHLVL', DiffsOnly => 1 );
+    $envs = $env->envs( Exclude => [ 'SHLVL', 'RANDOM' ], DiffsOnly => 1 );
 
     is_deeply ( [ sort keys %$envs ],
                 [ 'SHELL_GETENV' ],
