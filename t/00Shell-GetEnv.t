@@ -1,5 +1,5 @@
 #!perl
-use Test::More tests => 43;
+use Test::More;
 
 BEGIN {
     diag "The following tests may take some time.  Please be patient\n";
@@ -14,18 +14,21 @@ use Env::Path;
 use Time::Out qw( timeout );
 my $timeout_time = $ENV{TIMEOUT_TIME} || 30;
 
-my %source = (
-	      bash => '.',
-	      csh  => 'source',
-	      dash => '.',
-	      ksh  => '.',
-	      sh   => '.',
-	      tcsh => 'source',
-	     );
+my $FunkyEnv = "Funky ( Env ) Variable";
+
+my %Shells = (
+    bash => { source => '.',      Funky => 1 },
+    csh  => { source => 'source', Funky => 1 },
+    dash => { source => '.',      Funky => 1 },
+    ksh  => { source => '.',      Funky => 0 },
+    sh   => { source => '.',      Funky => 0 },
+    tcsh => { source => 'source', Funky => 1 },
+);
+
 
 
 my $path = Env::Path->PATH;
-for my $shell ( keys %source )
+while( my( $shell, $info ) = each %Shells )
 {
   SKIP:
   {
@@ -37,6 +40,7 @@ for my $shell ( keys %source )
       for my $startup ( 0, 1 )
       {
 	  $ENV{SHELL_GETENV_TEST} = 1;
+	  $ENV{$FunkyEnv} = $FunkyEnv;
 
           my %opt = %opt;
 
@@ -44,25 +48,36 @@ for my $shell ( keys %source )
 	  $opt{STDOUT} = "t/run.$shell.$startup.stdout";
 	  $opt{STDERR} = "t/run.$shell.$startup.stderr";
 
-	  my $env = timeout $timeout_time => sub { 
-	      Shell::GetEnv->new( $shell, 
-				  $source{$shell} . " t/testenv.$shell",
+	  my $env = timeout $timeout_time => sub {
+	      Shell::GetEnv->new( $shell,
+				  $info->{source} . " t/testenv.$shell",
 				  \%opt,
 				);
 	  };
 
 	  my $err = $@;
-	  ok ( ! $err, "$shell: startup=$startup; run subshell" ) 
+	  ok ( ! $err, "$shell: startup=$startup; run subshell" )
 	    or diag( "unexpected time out: $err\n",
 		     "please check $opt{STDOUT} and $opt{STDERR} for possible clues\n" );
 
 	SKIP:{
-	      skip "failed subprocess run", 2 if $err;
+	      my $ntests = 2;
+	      ++$ntests if $info->{Funky};
+
+	      skip "failed subprocess run", $ntests if $err;
 	      my $envs = $env->envs;
 	      ok( ! exists $envs->{SHELL_GETENV_TEST},
 		  "$shell: startup=$startup; unset" );
 	      ok(  $envs->{SHELL_GETENV} eq $shell,
 		   "$shell: startup=$startup;   set" );
+
+	      # make sure that weird environment variables get passed
+	      # through.  can't create this in the shell as some shells
+	      # balk at 'em
+	      if ( $info->{Funky} ) {
+		  ok(  exists $envs->{$FunkyEnv} && $envs->{$FunkyEnv} eq $FunkyEnv,
+		       "$shell: startup=$startup;   FunkyEnv = $FunkyEnv" );
+	      }
 	  }
       }
 
@@ -75,8 +90,8 @@ for my $shell ( keys %source )
 	local $opt{Expect} = 1;
         local $opt{Timeout} = $timeout_time;
 
-	my $env = Shell::GetEnv->new( $shell, 
-				      $source{$shell} . " t/testenv.$shell",
+	my $env = Shell::GetEnv->new( $shell,
+				      $info->{source} . " t/testenv.$shell",
 				      \%opt
 				    );
 
@@ -88,3 +103,5 @@ for my $shell ( keys %source )
   }
 
 }
+
+done_testing;

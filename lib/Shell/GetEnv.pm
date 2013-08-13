@@ -371,7 +371,7 @@ sub envs
 
     if ( $opt{EnvStr} )
     {
-	my @set = map { "$_=" . _shell_escape($env{$_}) } keys %env;
+	my @set = map { _shell_escape("$_=" . $env{$_}) } keys %env;
 	my @unset;
 
 	if ( $opt{ZapDeleted} )
