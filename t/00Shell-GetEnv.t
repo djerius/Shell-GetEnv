@@ -30,7 +30,7 @@ for my $shell ( keys %source )
   SKIP:
   {
       # make sure the shell exists
-      skip "Can't find shell $shell\n", 7, unless $path->Whence( $shell );
+      skip "Can't find shell $shell", 7, unless $path->Whence( $shell );
 
       my %opt = ( Verbose => 1 );
 
