@@ -42,6 +42,13 @@ my %shells = (
 		       Echo      => 'x',
 		      },
 
+	      zsh => {
+		       Interactive     => 'i',
+		       NoStartup => 'p',
+		       Verbose   => 'v',
+		       Echo      => 'x',
+		      },
+
 	      dash => {
 		       Interactive     => 'i',
 		       Verbose   => 'v',

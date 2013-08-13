@@ -23,11 +23,19 @@ my %Shells = (
     ksh  => { source => '.',      Funky => 0 },
     sh   => { source => '.',      Funky => 0 },
     tcsh => { source => 'source', Funky => 1 },
+    zsh  => { source => '.',      Funky => 1 },
 );
 
 
 
 my $path = Env::Path->PATH;
+
+$ENV{SHELL_GETENV_TEST} = 1;
+$ENV{$FunkyEnv} = $FunkyEnv;
+
+
+my %opt = ( Verbose => 1 );
+
 while( my( $shell, $info ) = each %Shells )
 {
   SKIP:
@@ -35,12 +43,8 @@ while( my( $shell, $info ) = each %Shells )
       # make sure the shell exists
       skip "Can't find shell $shell", 7, unless $path->Whence( $shell );
 
-      my %opt = ( Verbose => 1 );
-
       for my $startup ( 0, 1 )
       {
-	  $ENV{SHELL_GETENV_TEST} = 1;
-	  $ENV{$FunkyEnv} = $FunkyEnv;
 
           my %opt = %opt;
 
@@ -68,7 +72,8 @@ while( my( $shell, $info ) = each %Shells )
 	      my $envs = $env->envs;
 	      ok( ! exists $envs->{SHELL_GETENV_TEST},
 		  "$shell: startup=$startup; unset" );
-	      ok(  $envs->{SHELL_GETENV} eq $shell,
+	      ok(  exists $envs->{SHELL_GETENV} &&
+		   $envs->{SHELL_GETENV} eq $shell,
 		   "$shell: startup=$startup;   set" );
 
 	      # make sure that weird environment variables get passed
@@ -87,8 +92,18 @@ while( my( $shell, $info ) = each %Shells )
 	eval 'use Expect';
 	skip "Expect module not available", 1, if $@;
 
-	local $opt{Expect} = 1;
-        local $opt{Timeout} = $timeout_time;
+	my %opt = %opt;
+
+	$opt{Expect} = 1;
+        $opt{Timeout} = $timeout_time;
+	$opt{STDOUT} = "t/run.$shell.expect.stdout";
+	$opt{STDERR} = "t/run.$shell.expect.stderr";
+
+	# in interactive mode zsh will try to install startup files
+	# for the user if they don't have any.  this messes up the test.
+	# just turn off reading starup files for zsh
+	$opt{ShellOpts} = '-p'
+	  if $shell eq 'zsh';
 
 	my $env = Shell::GetEnv->new( $shell,
 				      $info->{source} . " t/testenv.$shell",
@@ -96,7 +111,9 @@ while( my( $shell, $info ) = each %Shells )
 				    );
 
 	my $envs = $env->envs;
-	ok(  $envs->{SHELL_GETENV} eq $shell,  "$shell: expect;  set" );
+        ok( ! exists $envs->{SHELL_GETENV_TEST}, "$shell: expect; unset" );
+	ok(  exists $envs->{SHELL_GETENV} &&
+	     $envs->{SHELL_GETENV} eq $shell,  "$shell: expect;  set" );
 
     }
 
