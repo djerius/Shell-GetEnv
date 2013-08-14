@@ -1,35 +1,70 @@
-Revision history for Perl extension Shell::GetEnv.
+0.08_02  2013-08-13T17:56:02-04:00
 
-0.08  Wed Jul  9 08:50:54 EDT 2008
-        - fix to quiet Perl::Critic::Compatibility 
+  [BUG FIX]
 
-0.07  Mon Jul  7 23:11:47 EDT 2008
-        - tests of Expect interface seem to sometimes time out too
-	  early, so increase test timeout from 10 to 30 seconds.  
+  * environment variable names may contain non-word characters (Marty
+    O'Brien <mob@cpan.org>) [rt.cpan.org #87110]
 
-0.06  Fri Mar 21 18:06:50 EDT 2008
-        - require Perl 5.8.0 or higher.  Changes to make this
-	  backwards compatible to 5.6.2 are too extensive.
+  [ENHANCEMENT]
 
-0.05  Mon Mar 17 12:03:56 EDT 2008
-        - DiffsOnly option to envs returned the inverse of what
-	  it was supposed to.
+  * zsh is now supported.
 
-0.04  Fri Sep 21 11:29:07 EDT 2007
-        - add support for dash
-	- Interactive mode is no longer the default due to bad
-	  interactions with dash, which is the default /bin/sh on
-	  some systems.
+  [BUILD FIXES]
 
-0.03  Thu Sep 20 13:34:35 EDT 2007
-        - use Storable to save/retrieve %ENV; avoid eval's and extra
-	  YAML module
-	- use wrapper script to clean up sub-shell command to save %ENV
-	- add timeouts to tests to prevent possible infinite hangs
+  * in diff-only test, ignore _ environment variable as it may change
+    under Cygwin (Marty O'Brien <mob@cpan.org>) [rt.cpan.org #87110]
 
-0.02  Sun Sep 16 22:19:48 EDT 2007
-        - fix handling of magic characters in envstr
+  * Make Changes file more compatible with CPAN::Changes::Spec
 
-0.01  Thu Aug  2 16:15:08 2007
-	- original version, based upon unpublished GrabEnv module
+0.08_01  2012-08-14T15:37:21-04:00
 
+  [BUILD FIXES]
+
+  * some shells generate a RANDOM environment variable; ignore it
+    during diff-only tests
+
+  * make pod & perlcritic tests author-only
+
+
+0.08  2008-07-09T08:50:54-04:00
+
+  * fix to quiet Perl::Critic::Compatibility
+
+0.07  2008-07-07T23:11:47-04:00
+
+  * tests of Expect interface seem to sometimes time out too early, so
+    increase test timeout from 10 to 30 seconds.
+
+0.06  2008-03-21T18:06:50-04:00
+
+  * require Perl 5.8.0 or higher.  Changes to make this backwards
+    compatible to 5.6.2 are too extensive.
+
+0.05  2008-03-17T12:03:56-04:00
+
+  * DiffsOnly option to envs returned the inverse of what it was
+    supposed to.
+
+0.04  2007-09-21T11:29:07-04:00
+
+  * add support for dash
+
+  * Interactive mode is no longer the default due to bad interactions
+    with dash, which is the default /bin/sh on some systems.
+
+0.03  2007-09-20T13:34:35-04:00
+
+   * use Storable to save/retrieve %ENV; avoid eval's and extra YAML
+     module
+
+   * use wrapper script to clean up sub-shell command to save %ENV
+
+   * add timeouts to tests to prevent possible infinite hangs
+
+0.02  2007-09-16T22:19:48-04:00
+
+   * fix handling of magic characters in envstr
+
+0.01  2007-08-02T16:15:08-04:00
+
+   * original version, based upon unpublished GrabEnv module
