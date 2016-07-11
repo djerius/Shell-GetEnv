@@ -1,4 +1,4 @@
-
+#! perl
 
 use strict;
 use warnings;
@@ -6,23 +6,20 @@ use inc::Module::Install;
 
 name 'Shell-GetEnv';
 
-perl_version '5.008000';
 license 'gpl3';
+auto_license( holder => 'Smithsonian Astrophysical Observatory' );
 all_from 'lib/Shell/GetEnv.pm';
+readme_from;
+readme_from '', { format => 'md' };;
+
+resources (
+   license    => 'http://www.gnu.org/licenses/gpl-3.0.html',
+   repository => 'https://github.com/djerius/shell-getenv',
+   bugtracker => 'https://rt.cpan.org/Public/Dist/Display.html?Name=Shell-GetEnv',
+);
 
 author_tests( 'xt' );
-author_requires 'Test::CPAN::Changes';
 
-requires 'File::Temp';
-requires 'File::Spec';
-requires 'Expect';
-requires 'IO::File';
-requires 'Storable';
-
-build_requires 'Test::More';
-build_requires 'Env::Path';
-build_requires 'Time::Out';
-
-auto_install;
+cpanfile
 
 WriteAll;
