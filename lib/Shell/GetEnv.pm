@@ -35,67 +35,69 @@ our $VERSION = '0.08_02';
 
 # a compendium of shells
 my %shells = (
-	      bash => {
-		       Interactive     => 'i',
-		       NoStartup => '--noprofile',
-		       Verbose   => 'v',
-		       Echo      => 'x',
-		      },
+    bash => {
+        interactive => 'i',
+        nostartup   => '--noprofile',
+        verbose     => 'v',
+        echo        => 'x',
+    },
 
-	      zsh => {
-		       Interactive     => 'i',
-		       NoStartup => 'p',
-		       Verbose   => 'v',
-		       Echo      => 'x',
-		      },
+    zsh => {
+        interactive => 'i',
+        nostartup   => 'p',
+        verbose     => 'v',
+        echo        => 'x',
+    },
 
-	      dash => {
-		       Interactive     => 'i',
-		       Verbose   => 'v',
-		       Echo      => 'x',
-		      },
+    dash => {
+        interactive => 'i',
+        verbose     => 'v',
+        echo        => 'x',
+    },
 
-	      sh => {
-		     Interactive     => 'i',
-		     Verbose   => 'v',
-		     Echo      => 'x',
-		    },
+    sh => {
+        interactive => 'i',
+        verbose     => 'v',
+        echo        => 'x',
+    },
 
-	      ksh => {
-		      Interactive     => 'i',
-		      NoStartup => 'p',
-		      Verbose   => 'v',
-		      Echo      => 'x',
-		     },
+    ksh => {
+        interactive => 'i',
+        nostartup   => 'p',
+        verbose     => 'v',
+        echo        => 'x',
+    },
 
-	      csh => {
-		      Interactive     => 'i',
-		      NoStartup => 'f',
-		      Echo      => 'x',
-		      Verbose   => 'v',
-		     },
+    csh => {
+        interactive => 'i',
+        nostartup   => 'f',
+        echo        => 'x',
+        verbose     => 'v',
+    },
 
-	      tcsh => {
-		       Interactive     => 'i',
-		       NoStartup => 'f',
-		       Echo      => 'x',
-		       Verbose   => 'v',
-		      },
-	     );
+    tcsh => {
+        interactive => 'i',
+        nostartup   => 'f',
+        echo        => 'x',
+        verbose     => 'v',
+    },
+);
 
 
-my %Opts = ( Startup => 1,
-	     Debug => 0,
-	     Echo    => 0,
-	     Verbose => 0,
-	     Interactive => 0,
-	     Redirect => 1,
-	     STDERR  => undef,
-	     STDOUT  => undef,
-	     Expect  => 0,
-	     Timeout => 10,
-	     ShellOpts => undef,
-	   );
+my %Opts = (
+    startup     => 1,
+    login       => 0,
+    debug       => 0,
+    echo        => 0,
+    verbose     => 0,
+    interactive => 0,
+    redirect    => 1,
+    stderr      => undef,
+    stdout      => undef,
+    expect      => 0,
+    timeout     => 10,
+    shellopts   => undef,
+);
 
 
 sub new
@@ -106,19 +108,22 @@ sub new
     croak( __PACKAGE__, "->new: unsupported shell: $shell\n" )
       unless defined $shells{$shell};
 
-    my $opt = 'HASH' eq ref( $_[-1] ) ? pop : {};
+    my %opt = %{ 'HASH' eq ref( $_[-1] ) ? pop : {} };
 
-    my @notvalid = grep { ! exists $Opts{$_} } keys %$opt;
+    # now want lc, but keep backwards compat
+    $opt{lc $_} = delete $opt{$_} for keys %opt;
+
+    my @notvalid = grep { ! exists $Opts{$_} } keys %opt;
     croak( __PACKAGE__, "->new: illegal option(s): @notvalid\n" )
       if @notvalid;
 
-    my $self = bless { %Opts, %$opt,
-		       Cmds => [@_],
-		       Shell => $shell
+    my $self = bless { %Opts, %opt,
+		       cmds => [@_],
+		       shell => $shell
 		     } , $class;
 
     # needed to get correct hash key for %shells
-    $self->{NoStartup} = ! $self->{Startup};
+    $self->{nostartup} = ! $self->{startup};
 
     $self->_getenv;
 
@@ -136,7 +141,7 @@ sub _getenv
       or croak( __PACKAGE__, ": unable to create temporary environment file" );
 
     # create script to dump environmental variables to the above file
-    push @{$self->{Cmds}},
+    push @{$self->{cmds}},
       $self->_dumper_script( $fh_e->filename ),
       'exit' ;
 
@@ -144,19 +149,19 @@ sub _getenv
     $self->_shell_options;
 
     # redirect i/o streams
-    $self->_stream_redir if $self->{Redirect};
+    $self->_stream_redir if $self->{redirect};
 
 
-    if ( $self->{Debug} )
+    if ( $self->{debug} )
     {
-	warn( "Shell: $self->{Shell}\n",
-	      "Options: ", join( ' ', @{$self->{ShellOptions}} ), "\n",
-	      "Cmds: \n", join( "\n", @{$self->{Cmds}}), "\n" );
+	warn( "Shell: $self->{shell}\n",
+	      "Options: ", join( ' ', @{$self->{shelloptions}} ), "\n",
+	      "Cmds: \n", join( "\n", @{$self->{cmds}}), "\n" );
     }
 
 
     eval {
-	if ( $self->{Expect} )
+	if ( $self->{expect} )
 	{
 	    $self->_getenv_expect( $fh_e->filename);
 	}
@@ -168,7 +173,7 @@ sub _getenv
     my $error = $@;
 
     # reset i/o streams
-    $self->_stream_reset if $self->{Redirect};
+    $self->_stream_reset if $self->{redirect};
 
     if ( $error )
     {
@@ -202,8 +207,8 @@ sub _stream_redir
     # redirect STDERR & STDOUT to either /dev/null or somewhere the user points
     # us to.
 
-    my $stdout = $self->{STDOUT} || File::Spec->devnull();
-    my $stderr = $self->{STDERR} || File::Spec->devnull();
+    my $stdout = $self->{stdout} || File::Spec->devnull();
+    my $stderr = $self->{stderr} || File::Spec->devnull();
 
     open( $self->{oSTDOUT}, ">&STDOUT" )
       or croak( __PACKAGE__,  ': error duping STDOUT' );
@@ -239,14 +244,14 @@ sub _shell_options
 {
     my ( $self, $scriptfile ) = @_;
 
-    my $shell = $shells{$self->{Shell}};
+    my $shell = $shells{$self->{shell}};
 
     ## no critic (ProhibitAccessOfPrivateData)
 
     my @options = 
       map { $shell->{$_} }
 	grep { exists $shell->{$_} && $self->{$_} }
-	  qw( NoStartup Echo Verbose Interactive )
+	  qw( nostartup echo verbose interactive )
 	    ;
 
     ## use critic
@@ -266,16 +271,16 @@ sub _shell_options
     # everything else
     my @otheropts = keys %options;
 
-    $self->{ShellOptions} =
+    $self->{shelloptions} =
 			[ 
 			 # long options go first (bash complains)
 			 @longopts,
 			 ( $bundled ? $bundled : () ),
 			 @otheropts,
-			  defined $self->{ShellOpts}
-			    ?  'ARRAY' eq ref($self->{ShellOpts})
-			       ? @{$self->{ShellOpts}}
-			       : $self->{ShellOpts}
+			  defined $self->{shellopts}
+			    ?  'ARRAY' eq ref($self->{shellopts})
+			       ? @{$self->{shellopts}}
+			       : $self->{shellopts}
 			    : (),
 			];
 }
@@ -286,12 +291,12 @@ sub _getenv_pipe
     my ( $self ) = @_;
 
     local $" = ' ';
-    open( my $pipe, '|-' , $self->{Shell}, @{$self->{ShellOptions}} )
-      or die( __PACKAGE__, ": error opening pipe to $self->{Shell}: $!\n" );
+    open( my $pipe, '|-' , $self->{shell}, @{$self->{shelloptions}} )
+      or die( __PACKAGE__, ": error opening pipe to $self->{shell}: $!\n" );
 
-    print $pipe ( join( "\n", @{$self->{Cmds}}), "\n");
+    print $pipe ( join( "\n", @{$self->{cmds}}), "\n");
     close $pipe
-      or die( __PACKAGE__, ": error closing pipe to $self->{Shell}: $!\n" );
+      or die( __PACKAGE__, ": error closing pipe to $self->{shell}: $!\n" );
 }
 
 # communicate with the shell using Expect
@@ -302,10 +307,10 @@ sub _getenv_expect
     require Expect;
     my $exp = Expect->new;
     $exp->raw_pty(1);
-    $exp->spawn( $self->{Shell}, @{$self->{ShellOptions}} )
-      or die( __PACKAGE__, ": error spawning $self->{Shell}\n" );
-    $exp->send( map { $_ . "\n" } @{$self->{Cmds}} );
-    $exp->expect( $self->{Timeout} );
+    $exp->spawn( $self->{shell}, @{$self->{shelloptions}} )
+      or die( __PACKAGE__, ": error spawning $self->{shell}\n" );
+    $exp->send( map { $_ . "\n" } @{$self->{cmds}} );
+    $exp->expect( $self->{timeout} );
 }
 
 # extract environmental variables from a dumped file
@@ -321,11 +326,14 @@ sub envs
 {
     my ( $self, %iopt ) = @_;
 
-    my %opt = ( DiffsOnly  => 0,
-		Exclude    => [],
-		EnvStr     => 0,
-		ZapDeleted => 0,
+    my %opt = ( diffsonly  => 0,
+		exclude    => [],
+		envstr     => 0,
+		zapdeleted => 0,
 	      );
+
+    # now want lc, but keep backwards compat
+    $iopt{lc $_} = delete $iopt{$_} for keys %iopt;
 
     my @unknown = grep { !exists $opt{$_} } keys %iopt;
     croak( __PACKAGE__, "->envs: unknown options: @unknown\n" )
@@ -340,10 +348,10 @@ sub envs
     # filter out excluded variables
 
     # ensure that scalars are handled correctly
-    $opt{Exclude} = [ $opt{Exclude} ]
-      unless 'ARRAY' eq ref $opt{Exclude};
+    $opt{exclude} = [ $opt{exclude} ]
+      unless 'ARRAY' eq ref $opt{exclude};
 
-    foreach my $exclude ( @{$opt{Exclude}} )
+    foreach my $exclude ( @{$opt{exclude}} )
     {
 	my @delkeys;
 
@@ -366,7 +374,7 @@ sub envs
 
     # return only variables which are new or differ from the current
     # environment
-    if ( $opt{DiffsOnly} )
+    if ( $opt{diffsonly} )
     {
 	my @delkeys =
 	  grep { exists $ENV{$_} && $env{$_} eq $ENV{$_} } keys %env;
@@ -376,12 +384,12 @@ sub envs
 
 
 
-    if ( $opt{EnvStr} )
+    if ( $opt{envstr} )
     {
 	my @set = map { _shell_escape("$_=" . $env{$_}) } keys %env;
 	my @unset;
 
-	if ( $opt{ZapDeleted} )
+	if ( $opt{zapdeleted} )
 	{
 	    my @deleted;
 	    @deleted = grep { exists $ENV{$_} && ! exists $self->{envs}{$_} }
@@ -522,7 +530,7 @@ Attributes:
 
 =over
 
-=item Startup I<boolean>
+=item C<startup> I<boolean>
 
 If true, the user's shell startup files are invoked.  This flag is
 supported for C<csh>, C<tcsh>, and C<bash>.  This is emulated under
@@ -533,52 +541,52 @@ processing under the other shells.
 
 This defaults to I<true>.
 
-=item Echo I<boolean>
+=item C<echo> I<boolean>
 
 If true, put shell is put in echo mode.  This is only of use when the
-B<STDOUT> attribute is used.  It defaults to I<false>.
+C<stdout> attribute is used.  It defaults to I<false>.
 
-=item Interactive I<boolean>
+=item C<interactive> I<boolean>
 
 If true, put the shell in interactive mode. Some shells do not react
 well when put in interactive mode but not connected to terminals.
-Try using the B<Expect> option instead. This defaults to I<false>.
+Try using the C<expect> option instead. This defaults to I<false>.
 
-=item Redirect I<boolean>
+=item C<redirect> I<boolean>
 
 If true, redirect the output and error streams (see also the C<STDERR>
-and C<STDOUT> options).  Defaults to true.
+and C<stdout> options).  Defaults to true.
 
-=item Verbose I<boolean>
+=item C<verbose> I<boolean>
 
 If true, put the shell in verbose mode.  This is only of use when the
-B<STDOUT> attribute is used.  It defaults to I<false>.
+C<stdout> attribute is used.  It defaults to I<false>.
 
-=item STDERR I<filename>
+=item C<stderr> I<filename>
 
 Normally output from the shells' standard error stream is discarded.
 This may be set to a file name to which the stream
-should be written.  See also the C<Redirect> option.
+should be written.  See also the C<redirect> option.
 
-=item STDOUT I<filename>
+=item C<stdout> I<filename>
 
 Normally output from the shells' standard output stream is discarded.
 This may be set to a file name to which the stream
 should be written.  See also the C<Redirect> option.
 
-=item Expect I<boolean>
+=item C<expect> I<boolean>
 
 If true, the Perl B<Expect> module is used to communicate with the
 subshell.  This is useful if it is necessary to simulate connection
 with a terminal, which may be important when setting up some
 enviroments.
 
-=item Timeout I<integer>
+=item C<timeout> I<integer>
 
 The number of seconds to wait for a response from the shell when using
 B<Expect>.  It defaults to 10 seconds.
 
-=item ShellOpts I<scalar> or I<arrayref>
+=item C<shellopts> I<scalar> or I<arrayref>
 
 Arbitrary options to be passed to the shell.
 
@@ -590,7 +598,7 @@ Arbitrary options to be passed to the shell.
 
 
 Return the environment.  Typically the environment is returned as a
-hashref, but if the B<EnvStr> option is true it will be returned as a
+hashref, but if the C<envstr> option is true it will be returned as a
 string suitable for use with the *NIX B<env> command.  If no options
 are specified, the entire environment is returned.
 
@@ -598,13 +606,13 @@ The following options are recognized:
 
 =over
 
-=item DiffsOnly I<boolean>
+=item C<diffsonly> I<boolean>
 
 If true, the returned environment contains only those variables which
 are new or which have changed from the current environment.  There is no way of
 indicating Variables which have been I<deleted>.
 
-=item Exclude I<array> or I<scalar>
+=item C<exclude> I<array> or I<scalar>
 
 This specifies variables to exclude from the returned environment.  It
 may be either a single value or an array of values.
@@ -615,18 +623,18 @@ reference.  The subroutine will be passed two arguments, the variable
 name and its value, and should return true if the variable should be
 excluded, false otherwise.
 
-=item EnvStr I<boolean>
+=item C<envstr> I<boolean>
 
 If true, a string representation of the environment is returned,
 suitable for use with the *NIX B<env> command.  Appropriate quoting is
 done so that it is correclty parsed by shells.
 
-If the B<ZapDeleted> option is also specified (and is true) variables
+If the C<zapdeleted> option is also specified (and is true) variables
 which are present in the current environment but I<not> in the new one
 are explicitly deleted by inserting C<-u variablename> in the output
 string.  B<Note>, however, that not all versions of B<env> recognize the
 B<-u> option (e.g. those in Solaris or OS X).  In those cases, to ensure the
-correct environment, use C<DiffsOnly => 0, ZapDeleted => 0> and
+correct environment, use C<diffsonly => 0, zapdeleted => 0> and
 invoke B<env> with the C<-i> option.
 
 =back
@@ -640,7 +648,7 @@ options are:
 
 =over
 
-=item Exclude I<array> or I<scalar>
+=item C<exclude> I<array> or I<scalar>
 
 This specifies variables to exclude from the returned environment.  It
 may be either a single value or an array of values.
@@ -651,7 +659,7 @@ reference.  The subroutine will be passed two arguments, the variable
 name and its value, and should return true if the variable should be
 excluded, false otherwise.
 
-=item ZapDeleted I<boolean>
+=item C<zapdeleted> I<boolean>
 
 If true, variables which are present in the current environment but
 I<not> in the new one are deleted from the current environment.
@@ -691,7 +699,7 @@ The B<YAML::Tiny> module is preferred for saving the environment
 (because of its smaller footprint); the B<Data::Dumper> module
 will be used if it is not available.
 
-The B<Expect> module is required only if the C<Expect> option is
+The B<Expect> module is required only if the C<expect> option is
 specified.
 
 
