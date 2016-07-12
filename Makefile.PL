@@ -12,6 +12,8 @@ all_from 'lib/Shell/GetEnv.pm';
 readme_from;
 readme_from '', { format => 'md' };;
 
+contributors q[Marty O'Brien <mob@cpan.org>] ;
+
 resources (
    license    => 'http://www.gnu.org/licenses/gpl-3.0.html',
    repository => 'https://github.com/djerius/shell-getenv',

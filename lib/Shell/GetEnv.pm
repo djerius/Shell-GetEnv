@@ -752,6 +752,14 @@ specified.
 
 Diab Jerius, E<lt>djerius@cpan.orgE<gt>
 
+=head1 CONTRIBUTORS
+
+=over
+
+=item Marty O'Brien <mob@cpan.org>
+
+=back
+
 =head1 COPYRIGHT AND LICENSE
 
 Copyright 2007 Smithsonian Astrophysical Observatory
