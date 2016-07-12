@@ -3,6 +3,9 @@ use strict;
 use warnings;
 
 use Test::More;
+use File::Spec::Functions qw[ catfile ];
+use Test::TempDir::Tiny;
+
 use Time::Out qw( timeout );
 my $timeout_time = $ENV{TIMEOUT_TIME} || 10;
 
@@ -19,11 +22,14 @@ else
 
 use Shell::GetEnv;
 
+my $dir = tempdir();
 
 my %opt = ( Startup => 0,
 	    Verbose => 1,
-	    STDERR => 't/envstr.stderr',
-	    STDOUT => 't/envstr.stdout' );
+	    STDERR => catfile( $dir, 'stderr' ),
+	    STDOUT => catfile( $dir, 'stdout' )
+	  );
+
 
 $ENV{SHELL_GETENV_TEST} = 1;
 my $env = timeout $timeout_time => 

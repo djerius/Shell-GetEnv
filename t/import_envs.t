@@ -7,13 +7,20 @@ use warnings;
 
 use Env::Path;
 
+use File::Spec::Functions qw[ catfile ];
+use Test::TempDir::Tiny;
+
 use Time::Out qw( timeout );
 my $timeout_time = $ENV{TIMEOUT_TIME} || 10;
 
+my $dir = tempdir();
+
 my %opt = ( Startup => 0,
 	    Verbose => 1,
-	    STDERR => 't/import_envs.stderr',
-	    STDOUT => 't/import_envs.stdout' );
+	    STDERR => catfile( $dir, 'stderr' ),
+	    STDOUT => catfile( $dir, 'stdout' )
+	  );
+
 
 {
     local %ENV = %ENV;

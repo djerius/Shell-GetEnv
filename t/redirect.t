@@ -6,15 +6,19 @@ BEGIN { use_ok('Shell::GetEnv') };
 use strict;
 use warnings;
 
-use File::Temp;
+use File::Spec::Functions qw[ catfile ];
+use Test::TempDir::Tiny;
 
 use Time::Out qw( timeout );
 my $timeout_time = $ENV{TIMEOUT_TIME} || 10;
 
+my $dir = tempdir();
+
 my %opt = ( Startup => 0,
 	    Verbose => 1,
-	    STDERR => 't/redirect.stderr',
-	    STDOUT => 't/redirect.stdout' );
+	    STDERR => catfile( $dir, 'stderr' ),
+	    STDOUT => catfile( $dir, 'stdout' )
+	  );
 
 
 my $env = timeout $timeout_time =>

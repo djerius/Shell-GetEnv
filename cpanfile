@@ -9,6 +9,8 @@ requires 'Storable';
 on test => sub {
 
    requires 'Test::More';
+   requires 'Test::TempDir::Tiny';
+   requires 'File::Spec::Functions';
    requires 'Env::Path';
    requires 'Time::Out';
 

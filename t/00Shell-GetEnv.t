@@ -10,6 +10,8 @@ use strict;
 use warnings;
 
 use Env::Path;
+use File::Spec::Functions qw[ catfile ];
+use Test::TempDir::Tiny;
 
 use Time::Out qw( timeout );
 my $timeout_time = $ENV{TIMEOUT_TIME} || 30;
@@ -49,8 +51,11 @@ while( my( $shell, $info ) = each %Shells )
           my %opt = %opt;
 
 	  $opt{Startup} = $startup;
-	  $opt{STDOUT} = "t/run.$shell.$startup.stdout";
-	  $opt{STDERR} = "t/run.$shell.$startup.stderr";
+
+	  my $dir = tempdir( "$shell.$startup" );
+
+	  $opt{STDOUT} = catfile( $dir, 'stdout');
+	  $opt{STDERR} = catfile( $dir, 'stderr');
 
 	  my $env = timeout $timeout_time => sub {
 	      Shell::GetEnv->new( $shell,
@@ -96,8 +101,11 @@ while( my( $shell, $info ) = each %Shells )
 
 	$opt{Expect} = 1;
         $opt{Timeout} = $timeout_time;
-	$opt{STDOUT} = "t/run.$shell.expect.stdout";
-	$opt{STDERR} = "t/run.$shell.expect.stderr";
+
+	my $dir = tempdir( "$shell.expect" );
+
+	$opt{STDOUT} = catfile( $dir, 'stdout');
+	$opt{STDERR} = catfile( $dir, 'stderr');
 
 	# in interactive mode zsh will try to install startup files
 	# for the user if they don't have any.  this messes up the test.

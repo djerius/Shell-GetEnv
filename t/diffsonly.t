@@ -7,15 +7,20 @@ use Test::More tests => 3;
 BEGIN { use_ok('Shell::GetEnv') };
 
 use Env::Path;
+use File::Spec::Functions qw[ catfile ];
+use Test::TempDir::Tiny;
 use Time::Out qw( timeout );
 my $timeout_time = $ENV{TIMEOUT_TIME} || 10;
 
 my ( $env, $envs, %env0, $env1 );
 
+my $dir = tempdir();
+
 my %opt = ( Startup => 0,
 	    Verbose => 1,
-	    STDERR => 't/exclude.stderr',
-	    STDOUT => 't/exclude.stdout' );
+	    STDERR => catfile( $dir, 'stderr' ),
+	    STDOUT => catfile( $dir, 'stdout' )
+	  );
 
 $env = timeout $timeout_time => 
   sub { Shell::GetEnv->new( 'sh',  ". t/testenv.sh", \%opt ) };
