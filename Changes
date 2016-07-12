@@ -1,3 +1,14 @@
+0.08_03	 2016-07-12T15:25:30-0400
+
+
+  [ENHANCEMENTS]
+
+    * new "login" option to start shell in login mode
+
+    * the status of the shell after running the specified commands is now
+      available via the status() method (Marty O'Brien <mob@cpan.org>)
+      [rt.cpan.org #87111]
+
 0.08_02  2013-08-13T17:56:02-04:00
 
   [BUG FIX]
