@@ -9,3 +9,5 @@ t/.*.stdout
 t/.*.stderr
 blibdirs
 MYMETA\.*
+.*\.orig$
+.*\.rej$
