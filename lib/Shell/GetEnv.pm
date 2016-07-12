@@ -524,7 +524,7 @@ the commands source a startup file.  For example:
 
 The supported shells are:
 
-  csh tcsh bash sh ksh
+  csh tcsh bash sh ksh zsh dash
 
 Attributes:
 
