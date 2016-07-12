@@ -40,6 +40,7 @@ my %shells = (
         nostartup   => '--noprofile',
         verbose     => 'v',
         echo        => 'x',
+        login       => 'l',
     },
 
     zsh => {
@@ -47,18 +48,21 @@ my %shells = (
         nostartup   => 'p',
         verbose     => 'v',
         echo        => 'x',
+        login       => 'l',
     },
 
     dash => {
         interactive => 'i',
         verbose     => 'v',
         echo        => 'x',
+        login       => 'l',
     },
 
     sh => {
         interactive => 'i',
         verbose     => 'v',
         echo        => 'x',
+        login       => 'l',
     },
 
     ksh => {
@@ -66,6 +70,7 @@ my %shells = (
         nostartup   => 'p',
         verbose     => 'v',
         echo        => 'x',
+        login       => 'l',
     },
 
     csh => {
@@ -73,6 +78,7 @@ my %shells = (
         nostartup   => 'f',
         echo        => 'x',
         verbose     => 'v',
+        login       => 'l',
     },
 
     tcsh => {
@@ -80,6 +86,7 @@ my %shells = (
         nostartup   => 'f',
         echo        => 'x',
         verbose     => 'v',
+        login       => 'l',
     },
 );
 
@@ -89,6 +96,7 @@ my %Opts = (
     login       => 0,
     debug       => 0,
     echo        => 0,
+    login       => 0,
     verbose     => 0,
     interactive => 0,
     redirect    => 1,
@@ -248,14 +256,25 @@ sub _shell_options
 
     ## no critic (ProhibitAccessOfPrivateData)
 
-    my @options = 
+    my @options =
       map { $shell->{$_} }
 	grep { exists $shell->{$_} && $self->{$_} }
-	  qw( nostartup echo verbose interactive )
+	  qw( nostartup echo verbose interactive login )
 	    ;
+
+    my @shellopts
+      = defined $self->{shellopts}
+      ? 'ARRAY' eq ref( $self->{shellopts} )
+          ? @{ $self->{shellopts} }
+          : $self->{shellopts}
+      : ();
 
     ## use critic
 
+    croak( "cannot combine 'login' with any other options for $self->{shell}\n" )
+	  if ( $self->{shell} eq 'csh' or $self->{shell} eq 'tcsh' )
+	      && $self->{login}
+	      && @options + @shellopts > 1;
 
     # bundled options are those without a leading hyphen or plus
     my %options = map { ( $_ => 1 ) } @options;
@@ -277,11 +296,7 @@ sub _shell_options
 			 @longopts,
 			 ( $bundled ? $bundled : () ),
 			 @otheropts,
-			  defined $self->{shellopts}
-			    ?  'ARRAY' eq ref($self->{shellopts})
-			       ? @{$self->{shellopts}}
-			       : $self->{shellopts}
-			    : (),
+			 @shellopts,
 			];
 }
 
@@ -551,6 +566,15 @@ C<stdout> attribute is used.  It defaults to I<false>.
 If true, put the shell in interactive mode. Some shells do not react
 well when put in interactive mode but not connected to terminals.
 Try using the C<expect> option instead. This defaults to I<false>.
+
+=item C<login> I<boolean>
+
+If true, invoke the shell as a login shell.  Defaults to
+I<false>.
+
+B<tcsh> and B<csh> will only honor this option if no other command
+line options are passed.  For these shells B<Shell::GetEnv> will
+throw an exception if this option conflicts with another.
 
 =item C<redirect> I<boolean>
 
