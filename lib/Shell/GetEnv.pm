@@ -32,6 +32,7 @@ use Shell::GetEnv::Dumper;
 
 our $VERSION = '0.08_02';
 
+my $status_var = 'p5_SHELL_GETENV_STATUS';
 
 # a compendium of shells
 my %shells = (
@@ -41,6 +42,7 @@ my %shells = (
         verbose     => 'v',
         echo        => 'x',
         login       => 'l',
+        save_status => qq[export $status_var=\$?],
     },
 
     zsh => {
@@ -49,6 +51,7 @@ my %shells = (
         verbose     => 'v',
         echo        => 'x',
         login       => 'l',
+        save_status => qq[export $status_var=\$?],
     },
 
     dash => {
@@ -56,6 +59,7 @@ my %shells = (
         verbose     => 'v',
         echo        => 'x',
         login       => 'l',
+        save_status => qq[export $status_var=\$?],
     },
 
     sh => {
@@ -63,6 +67,7 @@ my %shells = (
         verbose     => 'v',
         echo        => 'x',
         login       => 'l',
+        save_status => qq[$status_var=\$?; export $status_var],
     },
 
     ksh => {
@@ -71,6 +76,7 @@ my %shells = (
         verbose     => 'v',
         echo        => 'x',
         login       => 'l',
+        save_status => qq[export $status_var=\$?],
     },
 
     csh => {
@@ -79,6 +85,7 @@ my %shells = (
         echo        => 'x',
         verbose     => 'v',
         login       => 'l',
+        save_status => qq[setenv $status_var \$?],
     },
 
     tcsh => {
@@ -87,6 +94,7 @@ my %shells = (
         echo        => 'x',
         verbose     => 'v',
         login       => 'l',
+        save_status => qq[setenv $status_var \$?],
     },
 );
 
@@ -150,6 +158,7 @@ sub _getenv
 
     # create script to dump environmental variables to the above file
     push @{$self->{cmds}},
+      $shells{$self->{shell}}{save_status},
       $self->_dumper_script( $fh_e->filename ),
       'exit' ;
 
@@ -193,6 +202,7 @@ sub _getenv
     # retrieve environment
     $self->_retrieve_env( $fh_e->filename );
 }
+
 
 sub _dumper_script
 {
@@ -334,6 +344,7 @@ sub _retrieve_env
     my ( $self, $filename ) = @_;
 
     $self->{envs} = Shell::GetEnv::Dumper::read_envs( $filename );
+    $self->{status} = delete $self->{envs}{$status_var};
 }
 
 # return variables
@@ -419,6 +430,7 @@ sub envs
     return \%env;
 }
 
+sub status { $_[0]->{status} }
 
 sub _shell_escape
 {
@@ -500,6 +512,7 @@ Shell::GetEnv - extract the environment from a shell after executing commands
   use Shell::GetEnv;
 
   $env = Shell::GetEnv->new( $shell, $command );
+  $status = $env->status;
   $envs = $env->envs( %opts )
   $env->import_envs( %opts );
 
@@ -662,6 +675,14 @@ correct environment, use C<diffsonly => 0, zapdeleted => 0> and
 invoke B<env> with the C<-i> option.
 
 =back
+
+=item status
+
+  $status = $env->status;
+
+Returns the invoked shell's status after executing the commands
+provided to the constructor.  See L<perlfunc/system> for instructions
+on how to interpret the status.
 
 =item import_envs
 
