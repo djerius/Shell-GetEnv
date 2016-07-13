@@ -1,3 +1,9 @@
+0.08_04  2016-07-13T11:43:46-0400
+
+  [BUG FIX]
+    * missing semi-colon in Makefile.PL resulted in no dependencies
+      being recorded in META.yml
+
 0.08_03	 2016-07-12T15:25:30-0400
 
 
