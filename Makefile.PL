@@ -22,6 +22,6 @@ resources (
 
 author_tests( 'xt' );
 
-cpanfile
+cpanfile;
 
 WriteAll;
