@@ -1,3 +1,11 @@
+0.08_05  2016-07-14T16:25:28-0400
+
+  [TEST FIX]
+
+    * Beginning with dash version 0.58, its handling of
+      existing illegal environment variable names changed, causing a
+      test to fail.
+
 0.08_04  2016-07-13T11:43:46-0400
 
   [BUG FIX]
