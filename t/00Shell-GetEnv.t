@@ -21,7 +21,7 @@ my $FunkyEnv = "Funky ( Env ) Variable";
 my %Shells = (
     bash => { source => '.',      Funky => 1 },
     csh  => { source => 'source', Funky => 1 },
-    dash => { source => '.',      Funky => 1 },
+    dash => { source => '.',      Funky => 0 },
     ksh  => { source => '.',      Funky => 0 },
     sh   => { source => '.',      Funky => 0 },
     tcsh => { source => 'source', Funky => 1 },
