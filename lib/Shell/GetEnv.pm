@@ -30,7 +30,7 @@ use Carp;
 use File::Temp;
 use Shell::GetEnv::Dumper;
 
-our $VERSION = '0.08_05';
+our $VERSION = '0.08_06';
 
 my $status_var = 'p5_SHELL_GETENV_STATUS';
 

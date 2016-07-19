@@ -1,3 +1,9 @@
+0.08_06  2016-07-19T11:49:54-0400
+
+  [TEST DIAGNOSTICS]
+
+    * add extra test diagnostics to debug failures on NetBSD testers
+
 0.08_05  2016-07-14T16:25:28-0400
 
   [TEST FIX]
