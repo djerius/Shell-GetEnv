@@ -4,6 +4,7 @@ use warnings;
 
 use Test::More;
 use Env::Path;
+use IO::File;
 
 use File::Spec::Functions qw[ catfile ];
 use Test::TempDir::Tiny;
@@ -71,7 +72,11 @@ foreach my $shell (qw(sh bash csh dash ksh tcsh zsh )) {
 
       ok ( ! $err, "$label: ran subshell" )
 	or diag( "$label: unexpected time out: $err\n",
-		 "check $opt{STDOUT} and $opt{STDERR} for possible clues\n" );
+		 "STDOUT:\n",
+		 diag( IO::File->new( $opt{STDOUT}, 'r' )->getlines ),
+		 "STDERR:\n",
+		 diag( IO::File->new( $opt{STDERR}, 'r' )->getlines ),
+	       );
 
     SKIP: {
 	skip "failed subprocess run", 3 if $err;

@@ -13,6 +13,7 @@ on test => sub {
    requires 'File::Spec::Functions';
    requires 'Env::Path';
    requires 'Time::Out';
+   requires 'IO::File';
 
 };
 
