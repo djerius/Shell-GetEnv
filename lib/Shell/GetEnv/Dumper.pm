@@ -6,7 +6,7 @@ use warnings;
 use Carp;
 use Storable;
 
-our $VERSION = '0.08_06';
+our $VERSION = '0.09';
 
 # crazy, but avoids need to use YAML or evals of Data::Dumper
 # or crazy shell escapes
