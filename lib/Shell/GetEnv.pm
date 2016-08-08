@@ -85,7 +85,7 @@ my %shells = (
         echo        => 'x',
         verbose     => 'v',
         login       => 'l',
-        save_status => qq[setenv $status_var \$?],
+        save_status => qq[setenv $status_var \$status],
     },
 
     tcsh => {
@@ -94,7 +94,7 @@ my %shells = (
         echo        => 'x',
         verbose     => 'v',
         login       => 'l',
-        save_status => qq[setenv $status_var \$?],
+        save_status => qq[setenv $status_var \$status],
     },
 );
 
