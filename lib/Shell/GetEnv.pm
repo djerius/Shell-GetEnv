@@ -698,10 +698,6 @@ None by default.
 
 =head1 DEPENDENCIES
 
-The B<YAML::Tiny> module is preferred for saving the environment
-(because of its smaller footprint); the B<Data::Dumper> module
-will be used if it is not available.
-
 The B<Expect> module is required only if the C<expect> option is
 specified.
 

@@ -200,10 +200,6 @@ None by default.
 
 # DEPENDENCIES
 
-The **YAML::Tiny** module is preferred for saving the environment
-(because of its smaller footprint); the **Data::Dumper** module
-will be used if it is not available.
-
 The **Expect** module is required only if the `expect` option is
 specified.
 
