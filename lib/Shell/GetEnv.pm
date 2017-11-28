@@ -8,9 +8,11 @@ use warnings;
 use Carp ();
 
 use File::Temp ();
-use Shell::GetEnv::Dumper;
+use IO::Handle;
 
 our $VERSION = '0.10';
+
+use Shell::GetEnv::Dumper;
 
 my $status_var = 'p5_SHELL_GETENV_STATUS';
 
@@ -112,6 +114,14 @@ sub new {
     Carp::croak( __PACKAGE__, "->new: illegal option(s): @notvalid\n" )
       if @notvalid;
 
+    Carp::croak( __PACKAGE__,
+        "->new: $_ option must be a filename or a reference to a scalar\n" )
+      for grep {
+        my $type = ref $opt{$_};
+        $type && 'SCALAR' ne $type
+      } 'stdout', 'stderr';
+
+
     my $self = bless {
         %Opts, %opt,
         cmds  => [@_],
@@ -145,10 +155,6 @@ sub _getenv {
     # construct list of command line options for the shell
     $self->_shell_options;
 
-    # redirect i/o streams
-    $self->_stream_redir if $self->{redirect};
-
-
     if ( $self->{debug} ) {
         warn(
             "Shell: $self->{shell}\n",
@@ -161,6 +167,8 @@ sub _getenv {
         );
     }
 
+    # redirect i/o streams
+    $self->_stream_redir if $self->{redirect};
 
     eval {
         if ( $self->{expect} ) {
@@ -177,7 +185,7 @@ sub _getenv {
 
     if ( $error ) {
         local $Carp::CarpLevel = 1;
-        Carp::croak $error;
+        Carp::croak( $error );
     }
 
 
@@ -197,6 +205,19 @@ sub _dumper_script {
 }
 
 
+sub _stream_reset_hard {
+
+    my $self = shift;
+
+    # restore the streams
+    for my $stdstream ( [ stdout => \*STDOUT ], [ stderr => \*STDERR ], ) {
+        my ( $name, $fh ) = @$stdstream;
+
+        open( $fh, '>&', $self->{_old}{$name} ) if defined $self->{_old}{$name};
+        delete $self->{_old};
+        delete $self->{_new};
+    }
+}
 
 # redirect STDOUT and STDERR
 sub _stream_redir {
@@ -205,37 +226,120 @@ sub _stream_redir {
     # redirect STDERR & STDOUT to either /dev/null or somewhere the user points
     # us to.
 
-    my $stdout = $self->{stdout} || File::Spec->devnull();
-    my $stderr = $self->{stderr} || File::Spec->devnull();
+    eval {
 
-    open( $self->{oSTDOUT}, ">&STDOUT" )
-      or Carp::croak( __PACKAGE__, ': error duping STDOUT' );
-    open( $self->{oSTDERR}, ">&STDERR" )
-      or Carp::croak( __PACKAGE__, ': error duping STDERR' );
+        # redirect STDOUT first, so still have normal STDERR to croak to.
+        for my $stdstream ( [ stdout => \*STDOUT ], [ stderr => \*STDERR ], ) {
 
-    open( STDERR, '>', $stderr )
-      or Carp::croak( __PACKAGE__, ": unable to redirect STDERR to $stderr" );
-    open( STDOUT, '>', $stdout )
-      or Carp::croak( __PACKAGE__, ": unable to redirect STDOUT to $stdout" );
+            my ( $name, $fh ) = @$stdstream;
+            my $stream = $self->{$name};
 
-    select STDERR;
-    $| = 1;
-    select STDOUT;
-    $| = 1;
+            eval {
+                if ( defined $stream ) {
+
+                    if ( ref $stream ) {
+                        $stream = File::Temp->new
+                          or Carp::croak(
+                            "unable to create temporary output file for $name\n"
+                          );
+                    }
+                }
+
+                else {
+
+                    $stream = File::Spec->devnull;
+                }
+
+                $self->{_new}{$name} = $stream;
+
+                open( $self->{_old}{$name}, '>&', $fh )
+                  or Carp::croak( __PACKAGE__, ": error duping $name" );
+
+                open( $fh, '>', $stream )
+                  or Carp::croak( __PACKAGE__, ": unable to redirect $name" );
+
+                $fh->autoflush;
+            };
+
+        }
+
+    };
+
+    if ( $@ ) {
+        my $error = $@;
+        $self->_stream_reset_hard;
+        Carp::croak( $error );
+    }
 }
 
 # reset STDOUT and STDERR
 sub _stream_reset {
     my ( $self ) = @_;
 
-    close STDOUT;
-    close STDERR;
+    eval {
 
-    open STDOUT, '>&', $self->{oSTDOUT};
-    open STDERR, '>&', $self->{oSTDERR};
+        for my $stdstream ( [ stdout => \*STDOUT ], [ stderr => \*STDERR ], ) {
 
-    close delete $self->{oSTDOUT};
-    close delete $self->{oSTDERR};
+            my ( $name, $fh ) = @$stdstream;
+
+            my $stream = $self->{$name};
+
+            if ( !defined $stream || !ref $stream ) {
+
+                # close it
+                $fh->close
+                  or Carp::croak( "error closing $name during reset\n" );
+
+                # restore the old stream
+                open( $fh, '>&', $self->{_old}{$name} )
+                  or Carp::croak( "unable to restore $name\n" );
+            }
+
+            # user requested that content be returned in a scalar
+            else {
+
+                # dup it so we can restore the old filehandle and use it in
+                # case Perl needs to output something to stdout/stderr.
+                open( my $FH, '>&', $fh )
+                  or Carp::croak( "unable to dup $name during reset\n" );
+
+                $fh->close
+                  or Carp::croak( "error closing $name during reset\n" );
+
+                # restore the old stream
+                open $fh, '>&', $self->{_old}{$name}
+                  or Carp::croak( "unable to restore $name during reset\n" );
+
+                {
+                    local $/;
+                    my $RFH = IO::File->new( $self->{_new}{$name} )
+                      or Carp::croak(
+                        "unable to open $self->{_new}{$name} to retrieve $name\n"
+                      );
+
+                    ${$stream} = $RFH->getline;
+                }
+
+                $FH->close;
+            }
+
+
+            # this is the saved fh from the original streams
+            delete( $self->{_old}{$name} )->close;
+
+     # this is either a filename or File::Temp object. The latter will take care
+     # of cleaning up when it's destroyed.
+            delete $self->{_new}{$name};
+        }
+
+    };
+
+    if ( $@ ) {
+        my $error = $@;
+        $self->_stream_reset_hard;
+        Carp::croak( $error );
+    }
+
 }
 
 # create shell options
@@ -294,11 +398,13 @@ sub _getenv_pipe {
 
     local $" = ' ';
     open( my $pipe, '|-', $self->{shell}, @{ $self->{shelloptions} } )
-      or die( __PACKAGE__, ": error opening pipe to $self->{shell}: $!\n" );
+      or Carp::croak( __PACKAGE__,
+        ": error opening pipe to $self->{shell}: $!\n" );
 
     print $pipe ( join( "\n", @{ $self->{cmds} } ), "\n" );
     close $pipe
-      or die( __PACKAGE__, ": error closing pipe to $self->{shell}: $!\n" );
+      or Carp::croak( __PACKAGE__,
+        ": error closing pipe to $self->{shell}: $!\n" );
 }
 
 # communicate with the shell using Expect
@@ -309,7 +415,7 @@ sub _getenv_expect {
     my $exp = Expect->new;
     $exp->raw_pty( 1 );
     $exp->spawn( $self->{shell}, @{ $self->{shelloptions} } )
-      or die( __PACKAGE__, ": error spawning $self->{shell}\n" );
+      or Carp::croak( __PACKAGE__, ": error spawning $self->{shell}\n" );
     $exp->send( map { $_ . "\n" } @{ $self->{cmds} } );
     $exp->expect( $self->{timeout} );
 }
@@ -562,17 +668,19 @@ and C<stdout> options).  Defaults to true.
 If true, put the shell in verbose mode.  This is only of use when the
 C<stdout> attribute is used.  It defaults to I<false>.
 
-=item C<stderr> I<filename>
+=item C<stderr> I<filename>|I<scalar reference>
 
 Normally output from the shells' standard error stream is discarded.
-This may be set to a file name to which the stream
-should be written.  See also the C<redirect> option.
+This may be set to either a file name to which the stream
+should be written or a reference to a scalar which will receive the
+output.  See also the C<redirect> option.
 
 =item C<stdout> I<filename>
 
 Normally output from the shells' standard output stream is discarded.
-This may be set to a file name to which the stream
-should be written.  See also the C<Redirect> option.
+This may be set to either a file name to which the stream
+should be written or a reference to a scalar which will receive the
+output.  See also the C<redirect> option.
 
 =item C<expect> I<boolean>
 

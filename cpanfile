@@ -3,6 +3,7 @@ requires "Expect" => "0";
 requires "File::Spec" => "0";
 requires "File::Temp" => "0";
 requires "IO::File" => "0";
+requires "IO::Handle" => "0";
 requires "Storable" => "0";
 requires "perl" => "5.008000";
 requires "strict" => "0";
@@ -17,7 +18,7 @@ on 'test' => sub {
   requires "IO::File" => "0";
   requires "IO::Handle" => "0";
   requires "IPC::Open3" => "0";
-  requires "Test::More" => "0";
+  requires "Test::More" => "1.001014";
   requires "Test::TempDir::Tiny" => "0";
   requires "Time::Out" => "0";
 };

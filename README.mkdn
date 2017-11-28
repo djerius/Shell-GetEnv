@@ -93,17 +93,19 @@ returned either as a hash or as a string suitable for use with the
         If true, put the shell in verbose mode.  This is only of use when the
         `stdout` attribute is used.  It defaults to _false_.
 
-    - `stderr` _filename_
+    - `stderr` _filename_|_scalar reference_
 
         Normally output from the shells' standard error stream is discarded.
-        This may be set to a file name to which the stream
-        should be written.  See also the `redirect` option.
+        This may be set to either a file name to which the stream
+        should be written or a reference to a scalar which will receive the
+        output.  See also the `redirect` option.
 
     - `stdout` _filename_
 
         Normally output from the shells' standard output stream is discarded.
-        This may be set to a file name to which the stream
-        should be written.  See also the `Redirect` option.
+        This may be set to either a file name to which the stream
+        should be written or a reference to a scalar which will receive the
+        output.  See also the `redirect` option.
 
     - `expect` _boolean_
 
