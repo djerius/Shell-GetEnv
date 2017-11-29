@@ -5,8 +5,6 @@ require 5.008000;
 use strict;
 use warnings;
 
-use Carp ();
-
 use File::Temp ();
 use IO::Handle;
 
@@ -98,11 +96,17 @@ my %Opts = (
 );
 
 
+sub _croak {
+
+    require Carp;
+    Carp::croak( __PACKAGE__, ':', @_ );
+}
+
 sub new {
     my $class = shift;
     my $shell = shift;
 
-    Carp::croak( __PACKAGE__, "->new: unsupported shell: $shell\n" )
+    _croak( "unsupported shell: $shell\n" )
       unless defined $shells{$shell};
 
     my %opt = %{ 'HASH' eq ref( $_[-1] ) ? pop : {} };
@@ -111,11 +115,10 @@ sub new {
     $opt{ lc $_ } = delete $opt{$_} for keys %opt;
 
     my @notvalid = grep { !exists $Opts{$_} } keys %opt;
-    Carp::croak( __PACKAGE__, "->new: illegal option(s): @notvalid\n" )
+    _croak( "illegal option(s): @notvalid\n" )
       if @notvalid;
 
-    Carp::croak( __PACKAGE__,
-        "->new: $_ option must be a filename or a reference to a scalar\n" )
+    _croak( "$_ option must be a filename or a reference to a scalar\n" )
       for grep {
         my $type = ref $opt{$_};
         $type && 'SCALAR' ne $type
@@ -143,8 +146,7 @@ sub _getenv {
 
     # file to hold the environment
     my $fh_e = File::Temp->new()
-      or Carp::croak( __PACKAGE__,
-        ": unable to create temporary environment file" );
+      or _croak( "unable to create temporary environment file" );
 
     # create script to dump environmental variables to the above file
     push @{ $self->{cmds} },
@@ -185,7 +187,7 @@ sub _getenv {
 
     if ( $error ) {
         local $Carp::CarpLevel = 1;
-        Carp::croak( $error );
+        _croak( $error );
     }
 
 
@@ -239,7 +241,7 @@ sub _stream_redir {
 
                     if ( ref $stream ) {
                         $stream = File::Temp->new
-                          or Carp::croak(
+                          or _croak(
                             "unable to create temporary output file for $name\n"
                           );
                     }
@@ -253,10 +255,10 @@ sub _stream_redir {
                 $self->{_new}{$name} = $stream;
 
                 open( $self->{_old}{$name}, '>&', $fh )
-                  or Carp::croak( __PACKAGE__, ": error duping $name" );
+                  or _croak( "error duping $name" );
 
                 open( $fh, '>', $stream )
-                  or Carp::croak( __PACKAGE__, ": unable to redirect $name" );
+                  or _croak( "unable to redirect $name" );
 
                 $fh->autoflush;
             };
@@ -268,7 +270,7 @@ sub _stream_redir {
     if ( $@ ) {
         my $error = $@;
         $self->_stream_reset_hard;
-        Carp::croak( $error );
+        _croak( $error );
     }
 }
 
@@ -288,11 +290,11 @@ sub _stream_reset {
 
                 # close it
                 $fh->close
-                  or Carp::croak( "error closing $name during reset\n" );
+                  or _croak( "error closing $name during reset\n" );
 
                 # restore the old stream
                 open( $fh, '>&', $self->{_old}{$name} )
-                  or Carp::croak( "unable to restore $name\n" );
+                  or _croak( "unable to restore $name\n" );
             }
 
             # user requested that content be returned in a scalar
@@ -301,19 +303,19 @@ sub _stream_reset {
                 # dup it so we can restore the old filehandle and use it in
                 # case Perl needs to output something to stdout/stderr.
                 open( my $FH, '>&', $fh )
-                  or Carp::croak( "unable to dup $name during reset\n" );
+                  or _croak( "unable to dup $name during reset\n" );
 
                 $fh->close
-                  or Carp::croak( "error closing $name during reset\n" );
+                  or _croak( "error closing $name during reset\n" );
 
                 # restore the old stream
                 open $fh, '>&', $self->{_old}{$name}
-                  or Carp::croak( "unable to restore $name during reset\n" );
+                  or _croak( "unable to restore $name during reset\n" );
 
                 {
                     local $/;
                     my $RFH = IO::File->new( $self->{_new}{$name} )
-                      or Carp::croak(
+                      or _croak(
                         "unable to open $self->{_new}{$name} to retrieve $name\n"
                       );
 
@@ -337,7 +339,7 @@ sub _stream_reset {
     if ( $@ ) {
         my $error = $@;
         $self->_stream_reset_hard;
-        Carp::croak( $error );
+        _croak( $error );
     }
 
 }
@@ -363,7 +365,7 @@ sub _shell_options {
 
     ## use critic
 
-    Carp::croak(
+    _croak(
         "cannot combine 'login' with any other options for $self->{shell}\n" )
       if ( $self->{shell} eq 'csh' or $self->{shell} eq 'tcsh' )
       && $self->{login}
@@ -398,13 +400,11 @@ sub _getenv_pipe {
 
     local $" = ' ';
     open( my $pipe, '|-', $self->{shell}, @{ $self->{shelloptions} } )
-      or Carp::croak( __PACKAGE__,
-        ": error opening pipe to $self->{shell}: $!\n" );
+      or _croak( "error opening pipe to $self->{shell}: $!\n" );
 
     print $pipe ( join( "\n", @{ $self->{cmds} } ), "\n" );
     close $pipe
-      or Carp::croak( __PACKAGE__,
-        ": error closing pipe to $self->{shell}: $!\n" );
+      or _croak( "error closing pipe to $self->{shell}: $!\n" );
 }
 
 # communicate with the shell using Expect
@@ -415,7 +415,7 @@ sub _getenv_expect {
     my $exp = Expect->new;
     $exp->raw_pty( 1 );
     $exp->spawn( $self->{shell}, @{ $self->{shelloptions} } )
-      or Carp::croak( __PACKAGE__, ": error spawning $self->{shell}\n" );
+      or _croak( "error spawning $self->{shell}\n" );
     $exp->send( map { $_ . "\n" } @{ $self->{cmds} } );
     $exp->expect( $self->{timeout} );
 }
@@ -443,7 +443,7 @@ sub envs {
     $iopt{ lc $_ } = delete $iopt{$_} for keys %iopt;
 
     my @unknown = grep { !exists $opt{$_} } keys %iopt;
-    Carp::croak( __PACKAGE__, "->envs: unknown options: @unknown\n" )
+    _croak( "unknown options: @unknown\n" )
       if @unknown;
 
     %opt = ( %opt, %iopt );
@@ -547,7 +547,7 @@ sub import_envs {
     );
 
     my @unknown = grep { !exists $opt{$_} } keys %iopt;
-    Carp::croak( __PACKAGE__, "->import_envs: unknown options: @unknown\n" )
+    _croak( "unknown options: @unknown\n" )
       if @unknown;
 
     %opt = ( %opt, %iopt );
