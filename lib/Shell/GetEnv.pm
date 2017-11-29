@@ -216,9 +216,9 @@ sub _stream_reset_hard {
         my ( $name, $fh ) = @$stdstream;
 
         open( $fh, '>&', $self->{_old}{$name} ) if defined $self->{_old}{$name};
-        delete $self->{_old};
-        delete $self->{_new};
     }
+    delete $self->{_old};
+    delete $self->{_new};
 }
 
 # redirect STDOUT and STDERR
