@@ -119,6 +119,12 @@ returned either as a hash or as a string suitable for use with the
         The number of seconds to wait for a response from the shell when using
         **Expect**.  It defaults to 10 seconds.
 
+    - `alias` _bool_
+
+        If true, collect information about any aliases that were available
+        or created in the subshell, and make the aliases available in the
+        next subshell.  It defaults to _false_.
+
     - `shellopts` _scalar_ or _arrayref_
 
         Arbitrary options to be passed to the shell.
