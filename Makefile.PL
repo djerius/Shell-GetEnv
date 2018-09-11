@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use lib '.';   # reqd since Perl v5.26
 use inc::Module::Install;
 
 name 'Shell-GetEnv';

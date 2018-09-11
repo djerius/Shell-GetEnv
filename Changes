@@ -1,3 +1,11 @@
+0.11_01	2018-09-10T15:36:40-0700
+
+   [ENHANCEMENTS]
+
+   * extract alias information from shell environment
+     and make them available in the next subshell
+
+
 0.10	2016-08-25T09:51:29-0400
 
    * promote to official release, no changes from 0.09_01

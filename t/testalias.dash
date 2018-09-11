@@ -1,0 +1,4 @@
+export FOO=17 BAR=abc
+alias setfoo="export FOO=42"
+alias setbar="export BAR=def"
+setfoo

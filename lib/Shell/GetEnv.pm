@@ -29,10 +29,12 @@ use Carp;
 
 use File::Temp;
 use Shell::GetEnv::Dumper;
+use Shell::GetEnv::Alias;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11_01';
 
 my $status_var = 'p5_SHELL_GETENV_STATUS';
+use constant alias_var => 'Shell::GetEnv::ALIASES';
 
 # a compendium of shells
 my %shells = (
@@ -43,6 +45,8 @@ my %shells = (
         echo        => 'x',
         login       => 'l',
         save_status => qq[export $status_var=\$?],
+        write_alias => 'alias -p',   # 'alias' also ok
+        read_alias  => 'read_alias'
     },
 
     zsh => {
@@ -52,6 +56,8 @@ my %shells = (
         echo        => 'x',
         login       => 'l',
         save_status => qq[export $status_var=\$?],
+        write_alias => '(echo --g;alias +g;echo --s;alias -s;echo ---;alias)',
+        read_alias  => 'read_alias_zsh'
     },
 
     dash => {
@@ -60,6 +66,8 @@ my %shells = (
         echo        => 'x',
         login       => 'l',
         save_status => qq[export $status_var=\$?],
+        write_alias => 'alias',
+        read_alias  => 'read_alias_prepend'
     },
 
     sh => {
@@ -68,6 +76,8 @@ my %shells = (
         echo        => 'x',
         login       => 'l',
         save_status => qq[$status_var=\$?; export $status_var],
+        write_alias => 'alias',
+        read_alias  => 'read_alias_prepend',
     },
 
     ksh => {
@@ -77,6 +87,8 @@ my %shells = (
         echo        => 'x',
         login       => 'l',
         save_status => qq[export $status_var=\$?],
+        write_alias => 'alias -p',
+        read_alias  => 'read_alias',
     },
 
     csh => {
@@ -86,6 +98,8 @@ my %shells = (
         verbose     => 'v',
         login       => 'l',
         save_status => qq[setenv $status_var \$status],
+        write_alias => 'alias',
+        read_alias  => 'read_alias_csh',
     },
 
     tcsh => {
@@ -95,6 +109,8 @@ my %shells = (
         verbose     => 'v',
         login       => 'l',
         save_status => qq[setenv $status_var \$status],
+        write_alias => 'alias',
+        read_alias  => 'read_alias_csh',
     },
 );
 
@@ -113,6 +129,7 @@ my %Opts = (
     expect      => 0,
     timeout     => 10,
     shellopts   => undef,
+    alias       => 0,
 );
 
 
@@ -141,6 +158,13 @@ sub new
     # needed to get correct hash key for %shells
     $self->{nostartup} = ! $self->{startup};
 
+    $self->{aliases} = [];
+    if ( defined $ENV{ alias_var() } )
+    {
+        $self->{aliases} = _aliases();
+    }
+    delete $ENV{alias_var()};
+
     $self->_getenv;
 
     return $self;
@@ -155,11 +179,27 @@ sub _getenv
     # file to hold the environment
     my $fh_e = File::Temp->new( )
       or croak( __PACKAGE__, ": unable to create temporary environment file" );
+    my $fh_a;
 
     # create script to dump environmental variables to the above file
     push @{$self->{cmds}},
       $shells{$self->{shell}}{save_status},
-      $self->_dumper_script( $fh_e->filename ),
+      $self->_dumper_script( $fh_e->filename );
+
+    if ( $self->{alias} ) 
+    {
+        $fh_a = File::Temp->new( )
+            or croak( __PACKAGE__, ": unable to create temporary alias file" );
+        unshift @{$self->{cmds}}, @{$self->{aliases}};
+        if ( $self->{shell} eq 'bash' ) 
+        {
+            unshift @{$self->{cmds}}, "shopt -s expand_aliases"; # DWIM
+        }
+        push @{$self->{cmds}},
+            $shells{$self->{shell}}{write_alias} . " > \"$fh_a\"";
+    }
+
+    push @{$self->{cmds}},
       'exit' ;
 
     # construct list of command line options for the shell
@@ -201,6 +241,10 @@ sub _getenv
 
     # retrieve environment
     $self->_retrieve_env( $fh_e->filename );
+    if ( $self->{alias} )
+    {
+        $self->{aliases} = $self->_retrieve_alias( $fh_a->filename );
+    }
 }
 
 
@@ -345,6 +389,19 @@ sub _retrieve_env
 
     $self->{envs} = Shell::GetEnv::Dumper::read_envs( $filename );
     $self->{status} = delete $self->{envs}{$status_var};
+}
+
+sub _retrieve_alias
+{
+    my ( $self, $filename ) = @_;
+    my $method = $shells{$self->{shell}}{read_alias};
+    $method = Shell::GetEnv::Alias->can($method);
+    if ( $method )
+    {
+        return $method->($filename);
+    }
+    warn "alias retrieval method not found for shell ", $self->{shell};
+    return [];
 }
 
 # return variables
@@ -496,6 +553,20 @@ sub import_envs
 	delete @ENV{grep { exists $ENV{$_} && ! exists $self->{envs}{$_} }
 		      keys %ENV };
     }
+
+    if ( $self->{alias} )
+    {
+        $ENV{alias_var()} = 
+            Shell::GetEnv::Alias::_encode( @{$self->{aliases}} );
+    }
+}
+
+sub _aliases
+{
+    # commands to recreate aliases in the next shell    
+    my $alias_data = $ENV{ alias_var() };
+    return defined( $alias_data )
+        ? Shell::GetEnv::Alias::_decode( $alias_data ) : [ ];
 }
 
 
@@ -622,6 +693,12 @@ enviroments.
 
 The number of seconds to wait for a response from the shell when using
 B<Expect>.  It defaults to 10 seconds.
+
+=item C<alias> I<bool>
+
+If true, collect information about any aliases that were available
+or created in the subshell, and make the aliases available in the
+next subshell.  It defaults to I<false>.
 
 =item C<shellopts> I<scalar> or I<arrayref>
 

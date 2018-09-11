@@ -1,0 +1,3 @@
+# expect  setbar  alias to be set in  testalias.$shell
+setbar
+
