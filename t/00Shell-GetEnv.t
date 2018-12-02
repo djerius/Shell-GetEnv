@@ -50,78 +50,78 @@ while( my( $shell, $info ) = each %Shells )
 
           my %opt = %opt;
 
-	  $opt{Startup} = $startup;
+          $opt{Startup} = $startup;
 
-	  my $dir = tempdir( "$shell.$startup" );
+          my $dir = tempdir( "$shell.$startup" );
 
-	  $opt{STDOUT} = catfile( $dir, 'stdout');
-	  $opt{STDERR} = catfile( $dir, 'stderr');
+          $opt{STDOUT} = catfile( $dir, 'stdout');
+          $opt{STDERR} = catfile( $dir, 'stderr');
 
-	  my $env = timeout $timeout_time => sub {
-	      Shell::GetEnv->new( $shell,
-				  $info->{source} . " t/testenv.$shell",
-				  \%opt,
-				);
-	  };
+          my $env = timeout $timeout_time => sub {
+              Shell::GetEnv->new( $shell,
+                                  $info->{source} . " t/testenv.$shell",
+                                  \%opt,
+                                );
+          };
 
-	  my $err = $@;
-	  ok ( ! $err, "$shell: startup=$startup; run subshell" )
-	    or diag( "unexpected time out: $err\n",
-		     "please check $opt{STDOUT} and $opt{STDERR} for possible clues\n" );
+          my $err = $@;
+          ok ( ! $err, "$shell: startup=$startup; run subshell" )
+            or diag( "unexpected time out: $err\n",
+                     "please check $opt{STDOUT} and $opt{STDERR} for possible clues\n" );
 
-	SKIP:{
-	      my $ntests = 2;
-	      ++$ntests if $info->{Funky};
+        SKIP:{
+              my $ntests = 2;
+              ++$ntests if $info->{Funky};
 
-	      skip "failed subprocess run", $ntests if $err;
-	      my $envs = $env->envs;
-	      ok( ! exists $envs->{SHELL_GETENV_TEST},
-		  "$shell: startup=$startup; unset" );
-	      ok(  exists $envs->{SHELL_GETENV} &&
-		   $envs->{SHELL_GETENV} eq $shell,
-		   "$shell: startup=$startup;   set" );
+              skip "failed subprocess run", $ntests if $err;
+              my $envs = $env->envs;
+              ok( ! exists $envs->{SHELL_GETENV_TEST},
+                  "$shell: startup=$startup; unset" );
+              ok(  exists $envs->{SHELL_GETENV} &&
+                   $envs->{SHELL_GETENV} eq $shell,
+                   "$shell: startup=$startup;   set" );
 
-	      # make sure that weird environment variables get passed
-	      # through.  can't create this in the shell as some shells
-	      # balk at 'em
-	      if ( $info->{Funky} ) {
-		  ok(  exists $envs->{$FunkyEnv} && $envs->{$FunkyEnv} eq $FunkyEnv,
-		       "$shell: startup=$startup;   FunkyEnv = $FunkyEnv" );
-	      }
-	  }
+              # make sure that weird environment variables get passed
+              # through.  can't create this in the shell as some shells
+              # balk at 'em
+              if ( $info->{Funky} ) {
+                  ok(  exists $envs->{$FunkyEnv} && $envs->{$FunkyEnv} eq $FunkyEnv,
+                       "$shell: startup=$startup;   FunkyEnv = $FunkyEnv" );
+              }
+          }
       }
 
 
     SKIP:
     {
-	eval 'use Expect';
-	skip "Expect module not available", 1, if $@;
+        eval 'use Expect';
+        skip "Expect module not available", 1, if $@;
 
-	my %opt = %opt;
+        my %opt = %opt;
 
-	$opt{Expect} = 1;
+        $opt{Expect} = 1;
         $opt{Timeout} = $timeout_time;
 
-	my $dir = tempdir( "$shell.expect" );
+        my $dir = tempdir( "$shell.expect" );
 
-	$opt{STDOUT} = catfile( $dir, 'stdout');
-	$opt{STDERR} = catfile( $dir, 'stderr');
+        $opt{STDOUT} = catfile( $dir, 'stdout');
+        $opt{STDERR} = catfile( $dir, 'stderr');
 
-	# in interactive mode zsh will try to install startup files
-	# for the user if they don't have any.  this messes up the test.
-	# just turn off reading starup files for zsh
-	$opt{ShellOpts} = '-p'
-	  if $shell eq 'zsh';
+        # in interactive mode zsh will try to install startup files
+        # for the user if they don't have any.  this messes up the test.
+        # just turn off reading starup files for zsh
+        $opt{ShellOpts} = '-p'
+          if $shell eq 'zsh';
 
-	my $env = Shell::GetEnv->new( $shell,
-				      $info->{source} . " t/testenv.$shell",
-				      \%opt
-				    );
+        my $env = Shell::GetEnv->new( $shell,
+                                      $info->{source} . " t/testenv.$shell",
+                                      \%opt
+                                    );
 
-	my $envs = $env->envs;
+        my $envs = $env->envs;
         ok( ! exists $envs->{SHELL_GETENV_TEST}, "$shell: expect; unset" );
-	ok(  exists $envs->{SHELL_GETENV} &&
-	     $envs->{SHELL_GETENV} eq $shell,  "$shell: expect;  set" );
+        ok(  exists $envs->{SHELL_GETENV} &&
+             $envs->{SHELL_GETENV} eq $shell,  "$shell: expect;  set" );
 
     }
 

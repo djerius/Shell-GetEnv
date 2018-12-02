@@ -1,33 +1,13 @@
-# --8<--8<--8<--8<--
-#
-# Copyright (C) 2007 Smithsonian Astrophysical Observatory
-#
-# This file is part of Shell::GetEnv
-#
-# Shell::GetEnv is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or (at
-# your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-# -->8-->8-->8-->8--
-
 package Shell::GetEnv;
 
+# ABSTRACT: extract the environment from a shell after executing commands
 require 5.008000;
 use strict;
 use warnings;
 
-use Carp;
+use Carp ();
 
-use File::Temp;
+use File::Temp ();
 use Shell::GetEnv::Dumper;
 
 our $VERSION = '0.10';
@@ -121,7 +101,7 @@ sub new
     my $class = shift;
     my $shell = shift;
 
-    croak( __PACKAGE__, "->new: unsupported shell: $shell\n" )
+    Carp::croak( __PACKAGE__, "->new: unsupported shell: $shell\n" )
       unless defined $shells{$shell};
 
     my %opt = %{ 'HASH' eq ref( $_[-1] ) ? pop : {} };
@@ -130,13 +110,13 @@ sub new
     $opt{lc $_} = delete $opt{$_} for keys %opt;
 
     my @notvalid = grep { ! exists $Opts{$_} } keys %opt;
-    croak( __PACKAGE__, "->new: illegal option(s): @notvalid\n" )
+    Carp::croak( __PACKAGE__, "->new: illegal option(s): @notvalid\n" )
       if @notvalid;
 
     my $self = bless { %Opts, %opt,
-		       cmds => [@_],
-		       shell => $shell
-		     } , $class;
+                       cmds => [@_],
+                       shell => $shell
+                     } , $class;
 
     # needed to get correct hash key for %shells
     $self->{nostartup} = ! $self->{startup};
@@ -154,7 +134,7 @@ sub _getenv
 
     # file to hold the environment
     my $fh_e = File::Temp->new( )
-      or croak( __PACKAGE__, ": unable to create temporary environment file" );
+      or Carp::croak( __PACKAGE__, ": unable to create temporary environment file" );
 
     # create script to dump environmental variables to the above file
     push @{$self->{cmds}},
@@ -171,21 +151,21 @@ sub _getenv
 
     if ( $self->{debug} )
     {
-	warn( "Shell: $self->{shell}\n",
-	      "Options: ", join( ' ', @{$self->{shelloptions}} ), "\n",
-	      "Cmds: \n", join( "\n", @{$self->{cmds}}), "\n" );
+        warn( "Shell: $self->{shell}\n",
+              "Options: ", join( ' ', @{$self->{shelloptions}} ), "\n",
+              "Cmds: \n", join( "\n", @{$self->{cmds}}), "\n" );
     }
 
 
     eval {
-	if ( $self->{expect} )
-	{
-	    $self->_getenv_expect( $fh_e->filename);
-	}
-	else
-	{
-	    $self->_getenv_pipe( $fh_e->filename);
-	}
+        if ( $self->{expect} )
+        {
+            $self->_getenv_expect( $fh_e->filename);
+        }
+        else
+        {
+            $self->_getenv_pipe( $fh_e->filename);
+        }
     };
     my $error = $@;
 
@@ -194,8 +174,8 @@ sub _getenv
 
     if ( $error )
     {
-	local $Carp::CarpLevel = 1;
-	croak $error;
+        local $Carp::CarpLevel = 1;
+        Carp::croak $error;
     }
 
 
@@ -229,14 +209,14 @@ sub _stream_redir
     my $stderr = $self->{stderr} || File::Spec->devnull();
 
     open( $self->{oSTDOUT}, ">&STDOUT" )
-      or croak( __PACKAGE__,  ': error duping STDOUT' );
+      or Carp::croak( __PACKAGE__,  ': error duping STDOUT' );
     open( $self->{oSTDERR}, ">&STDERR" )
-      or croak( __PACKAGE__,  ': error duping STDERR' );
+      or Carp::croak( __PACKAGE__,  ': error duping STDERR' );
 
     open( STDERR, '>', $stderr ) or
-      croak( __PACKAGE__, ": unable to redirect STDERR to $stderr" );
+      Carp::croak( __PACKAGE__, ": unable to redirect STDERR to $stderr" );
     open( STDOUT, '>', $stdout ) or
-      croak( __PACKAGE__, ": unable to redirect STDOUT to $stdout" );
+      Carp::croak( __PACKAGE__, ": unable to redirect STDOUT to $stdout" );
 
     select STDERR; $| = 1;
     select STDOUT; $| = 1;
@@ -260,7 +240,7 @@ sub _stream_reset
 # create shell options
 sub _shell_options
 {
-    my ( $self, $scriptfile ) = @_;
+    my ( $self ) = @_;
 
     my $shell = $shells{$self->{shell}};
 
@@ -268,9 +248,9 @@ sub _shell_options
 
     my @options =
       map { $shell->{$_} }
-	grep { exists $shell->{$_} && $self->{$_} }
-	  qw( nostartup echo verbose interactive login )
-	    ;
+        grep { exists $shell->{$_} && $self->{$_} }
+          qw( nostartup echo verbose interactive login )
+            ;
 
     my @shellopts
       = defined $self->{shellopts}
@@ -281,10 +261,10 @@ sub _shell_options
 
     ## use critic
 
-    croak( "cannot combine 'login' with any other options for $self->{shell}\n" )
-	  if ( $self->{shell} eq 'csh' or $self->{shell} eq 'tcsh' )
-	      && $self->{login}
-	      && @options + @shellopts > 1;
+    Carp::croak( "cannot combine 'login' with any other options for $self->{shell}\n" )
+          if ( $self->{shell} eq 'csh' or $self->{shell} eq 'tcsh' )
+              && $self->{login}
+              && @options + @shellopts > 1;
 
     # bundled options are those without a leading hyphen or plus
     my %options = map { ( $_ => 1 ) } @options;
@@ -301,13 +281,13 @@ sub _shell_options
     my @otheropts = keys %options;
 
     $self->{shelloptions} =
-			[ 
-			 # long options go first (bash complains)
-			 @longopts,
-			 ( $bundled ? $bundled : () ),
-			 @otheropts,
-			 @shellopts,
-			];
+                        [
+                         # long options go first (bash complains)
+                         @longopts,
+                         ( $bundled ? $bundled : () ),
+                         @otheropts,
+                         @shellopts,
+                        ];
 }
 
 # communicate with the shell using a pipe
@@ -327,7 +307,7 @@ sub _getenv_pipe
 # communicate with the shell using Expect
 sub _getenv_expect
 {
-    my ( $self, $filename ) = @_;
+    my ( $self ) = @_;
 
     require Expect;
     my $exp = Expect->new;
@@ -353,16 +333,16 @@ sub envs
     my ( $self, %iopt ) = @_;
 
     my %opt = ( diffsonly  => 0,
-		exclude    => [],
-		envstr     => 0,
-		zapdeleted => 0,
-	      );
+                exclude    => [],
+                envstr     => 0,
+                zapdeleted => 0,
+              );
 
     # now want lc, but keep backwards compat
     $iopt{lc $_} = delete $iopt{$_} for keys %iopt;
 
     my @unknown = grep { !exists $opt{$_} } keys %iopt;
-    croak( __PACKAGE__, "->envs: unknown options: @unknown\n" )
+    Carp::croak( __PACKAGE__, "->envs: unknown options: @unknown\n" )
       if @unknown;
 
     %opt = ( %opt, %iopt );
@@ -379,22 +359,22 @@ sub envs
 
     foreach my $exclude ( @{$opt{exclude}} )
     {
-	my @delkeys;
+        my @delkeys;
 
-	if ( 'Regexp' eq ref $exclude )
-	{
-	    @delkeys = grep { /$exclude/ } keys %env;
-	}
-	elsif ( 'CODE' eq ref $exclude )
-	{
-	    @delkeys = grep { $exclude->($_, $env{$_}) } keys %env;
-	}
-	else
-	{
-	    @delkeys = grep { $_ eq $exclude } keys %env;
-	}
+        if ( 'Regexp' eq ref $exclude )
+        {
+            @delkeys = grep { /$exclude/ } keys %env;
+        }
+        elsif ( 'CODE' eq ref $exclude )
+        {
+            @delkeys = grep { $exclude->($_, $env{$_}) } keys %env;
+        }
+        else
+        {
+            @delkeys = grep { $_ eq $exclude } keys %env;
+        }
 
-	delete @env{@delkeys};
+        delete @env{@delkeys};
     }
 
 
@@ -402,29 +382,29 @@ sub envs
     # environment
     if ( $opt{diffsonly} )
     {
-	my @delkeys =
-	  grep { exists $ENV{$_} && $env{$_} eq $ENV{$_} } keys %env;
+        my @delkeys =
+          grep { exists $ENV{$_} && $env{$_} eq $ENV{$_} } keys %env;
 
-	delete @env{@delkeys};
+        delete @env{@delkeys};
     }
 
 
 
     if ( $opt{envstr} )
     {
-	my @set = map { _shell_escape("$_=" . $env{$_}) } keys %env;
-	my @unset;
+        my @set = map { _shell_escape("$_=" . $env{$_}) } keys %env;
+        my @unset;
 
-	if ( $opt{zapdeleted} )
-	{
-	    my @deleted;
-	    @deleted = grep { exists $ENV{$_} && ! exists $self->{envs}{$_} }
-	      keys %ENV;
+        if ( $opt{zapdeleted} )
+        {
+            my @deleted;
+            @deleted = grep { exists $ENV{$_} && ! exists $self->{envs}{$_} }
+              keys %ENV;
 
-	    @unset = map { "-u $_" } @deleted;
-	}
+            @unset = map { "-u $_" } @deleted;
+        }
 
-	return join( ' ', @unset, @set );
+        return join( ' ', @unset, @set );
     }
 
     return \%env;
@@ -445,7 +425,7 @@ sub _shell_escape
   # if there's white space, single quote the entire word.  however,
   # since single quotes can't be escaped inside single quotes,
   # isolate them from the single quoted part and escape them.
-  # i.e., the string a 'b turns into 'a '\''b' 
+  # i.e., the string a 'b turns into 'a '\''b'
   elsif ( $str =~ /\s/ )
   {
     # isolate the lone single quotes
@@ -473,11 +453,11 @@ sub import_envs
     my ( $self, %iopt ) = @_;
 
     my %opt = ( Exclude    => [],
-		ZapDeleted => 1,
-	      );
+                ZapDeleted => 1,
+              );
 
     my @unknown = grep { !exists $opt{$_} } keys %iopt;
-    croak( __PACKAGE__, "->import_envs: unknown options: @unknown\n" )
+    Carp::croak( __PACKAGE__, "->import_envs: unknown options: @unknown\n" )
       if @unknown;
 
     %opt = ( %opt, %iopt );
@@ -486,26 +466,25 @@ sub import_envs
     # store new values
     while( my ( $key, $val ) = each %$env )
     {
-	$ENV{$key} = $val;
+        $ENV{$key} = $val;
     }
 
 
     # remove deleted ones, if requested
     if ( $opt{ZapDeleted} )
     {
-	delete @ENV{grep { exists $ENV{$_} && ! exists $self->{envs}{$_} }
-		      keys %ENV };
+        delete @ENV{grep { exists $ENV{$_} && ! exists $self->{envs}{$_} }
+                      keys %ENV };
     }
 }
 
 
 1;
+
+# COPYRIGHT
+
 __END__
 
-
-=head1 NAME
-
-Shell::GetEnv - extract the environment from a shell after executing commands
 
 =head1 SYNOPSIS
 
@@ -616,7 +595,7 @@ should be written.  See also the C<Redirect> option.
 If true, the Perl B<Expect> module is used to communicate with the
 subshell.  This is useful if it is necessary to simulate connection
 with a terminal, which may be important when setting up some
-enviroments.
+environments.
 
 =item C<timeout> I<integer>
 
@@ -664,7 +643,7 @@ excluded, false otherwise.
 
 If true, a string representation of the environment is returned,
 suitable for use with the *NIX B<env> command.  Appropriate quoting is
-done so that it is correclty parsed by shells.
+done so that it is correctly parsed by shells.
 
 If the C<zapdeleted> option is also specified (and is true) variables
 which are present in the current environment but I<not> in the new one
@@ -717,7 +696,22 @@ I<not> in the new one are deleted from the current environment.
 
 None by default.
 
+=head1 DEPENDENCIES
 
+The B<YAML::Tiny> module is preferred for saving the environment
+(because of its smaller footprint); the B<Data::Dumper> module
+will be used if it is not available.
+
+The B<Expect> module is required only if the C<expect> option is
+specified.
+
+=head1 CONTRIBUTORS
+
+=over
+
+=item Marty O'Brien <mob@cpan.org>
+
+=back
 
 =head1 SEE ALSO
 
@@ -737,38 +731,3 @@ This module's unique features:
 =item more flexible means of submitting commands to the shell
 
 =back
-
-=head1 DEPENDENCIES
-
-The B<YAML::Tiny> module is preferred for saving the environment
-(because of its smaller footprint); the B<Data::Dumper> module
-will be used if it is not available.
-
-The B<Expect> module is required only if the C<expect> option is
-specified.
-
-
-=head1 AUTHOR
-
-Diab Jerius, E<lt>djerius@cpan.orgE<gt>
-
-=head1 CONTRIBUTORS
-
-=over
-
-=item Marty O'Brien <mob@cpan.org>
-
-=back
-
-=head1 COPYRIGHT AND LICENSE
-
-Copyright 2007 Smithsonian Astrophysical Observatory
-
-This software is released under the GNU General Public License.  You
-may find a copy at
-
-          http://www.gnu.org/licenses
-
-
-
-=cut

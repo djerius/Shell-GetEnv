@@ -25,20 +25,20 @@ use Shell::GetEnv;
 my $dir = tempdir();
 
 my %opt = ( Startup => 0,
-	    Verbose => 1,
-	    STDERR => catfile( $dir, 'stderr' ),
-	    STDOUT => catfile( $dir, 'stdout' )
-	  );
+            Verbose => 1,
+            STDERR => catfile( $dir, 'stderr' ),
+            STDOUT => catfile( $dir, 'stdout' )
+          );
 
 
 $ENV{SHELL_GETENV_TEST} = 1;
-my $env = timeout $timeout_time => 
+my $env = timeout $timeout_time =>
   sub { Shell::GetEnv->new( 'sh',  ". t/testenv.sh", \%opt ) };
 
 my $err = $@;
-ok ( ! $err, "run subshell" ) 
+ok ( ! $err, "run subshell" )
       or diag( "unexpected time out: $err\n",
-	       "please check $opt{STDOUT} and $opt{STDERR} for possible clues\n" );
+               "please check $opt{STDOUT} and $opt{STDERR} for possible clues\n" );
 
 SKIP:
 {
@@ -56,7 +56,7 @@ SKIP:
       $env->_stream_reset();
 
       skip "env doesn't support -u flag", 1 if $env_bad;
-      
+
 
       my $envstr = $env->envs( EnvStr => 1, DiffsOnly => 1 );
       chomp( my $res = `env $envstr $^X -e 'print \$ENV{SHELL_GETENV}'` );

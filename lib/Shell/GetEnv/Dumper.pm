@@ -21,8 +21,8 @@ sub write_envs
 
     if ( ! store(\%ENV, $file) )
     {
-	warn( "error storing environment to $file\n" );
-	exit(1);
+        warn( "error storing environment to $file\n" );
+        exit(1);
     }
 }
 

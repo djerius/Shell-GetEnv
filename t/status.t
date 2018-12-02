@@ -21,8 +21,8 @@ use Shell::GetEnv;
 
 
 my %opt = ( Startup => 0,
-	    Verbose => 1,
-	  );
+            Verbose => 1,
+          );
 
 my %source = (
               bash => '.',
@@ -64,30 +64,30 @@ foreach my $shell (qw(sh bash csh dash ksh tcsh zsh )) {
                               # command line
 
       my $env = eval {
-	timeout $timeout_time =>
-	  sub {
-	    Shell::GetEnv->new( $shell, "$source t/teststatus.$shell", \%opt );
-	  }; };
+        timeout $timeout_time =>
+          sub {
+            Shell::GetEnv->new( $shell, "$source t/teststatus.$shell", \%opt );
+          }; };
       my $err = $@;
 
       ok ( ! $err, "$label: ran subshell" )
-	or diag( "$label: unexpected time out: $err\n",
-		 "STDOUT:\n",
-		 diag( IO::File->new( $opt{STDOUT}, 'r' )->getlines ),
-		 "STDERR:\n",
-		 diag( IO::File->new( $opt{STDERR}, 'r' )->getlines ),
-	       );
+        or diag( "$label: unexpected time out: $err\n",
+                 "STDOUT:\n",
+                 diag( IO::File->new( $opt{STDOUT}, 'r' )->getlines ),
+                 "STDERR:\n",
+                 diag( IO::File->new( $opt{STDERR}, 'r' )->getlines ),
+               );
 
     SKIP: {
-	skip "failed subprocess run", 3 if $err;
+        skip "failed subprocess run", 3 if $err;
 
-	my $status = $env->status;
-	is( $status, $expected_status, "$label: correct status returned" );
+        my $status = $env->status;
+        is( $status, $expected_status, "$label: correct status returned" );
 
-	$env->import_envs;
-	my $argout = $ENV{"GETENV_ARG"};
-	is ( $ENV{"GETENV_TEST"}, 'bogus' , "$label: GETENV_TEST survived system call" );
-	is ( $ENV{"GETENV_ARG"},  $arg,     "$label: GETENV_ARG set correctly in system call" );
+        $env->import_envs;
+        my $argout = $ENV{"GETENV_ARG"};
+        is ( $ENV{"GETENV_TEST"}, 'bogus' , "$label: GETENV_TEST survived system call" );
+        is ( $ENV{"GETENV_ARG"},  $arg,     "$label: GETENV_ARG set correctly in system call" );
       }
     }
   }
