@@ -1,10 +1,9 @@
 #!perl
 
-use strict;
-use warnings;
+use Test2::V0;
+use Test2::Tools::Explain;
 
-use Test::More tests => 3;
-BEGIN { use_ok( 'Shell::GetEnv' ) }
+use Shell::GetEnv;
 
 use Env::Path;
 use File::Spec::Functions qw[ catfile ];
@@ -34,7 +33,13 @@ ok( !$err, "run subshell" )
 SKIP: {
     skip "failed subprocess run", 2 if $err;
 
-    $envs = $env->envs( Exclude => [ 'SHLVL', 'RANDOM', '_' ], DiffsOnly => 1 );
+    $envs = $env->envs(
+        Exclude   => [ 'PWD', 'SHLVL', 'RANDOM', '_' ],
+        DiffsOnly => 1
+    );
 
-    is_deeply( [ sort keys %$envs ], ['SHELL_GETENV'], 'DiffsOnly' );
+    is( [ sort keys %$envs ], ['SHELL_GETENV'], 'DiffsOnly' )
+      or diag explain $envs;
 }
+
+done_testing;

@@ -1,8 +1,7 @@
 #!perl
-use strict;
-use warnings;
 
-use Test::More;
+use Test2::V0;
+
 use Env::Path;
 use IO::File;
 
@@ -14,11 +13,7 @@ my $timeout_time = $ENV{TIMEOUT_TIME} || 10;
 
 use Env::Path;
 
-plan tests => 56;
-
-
 use Shell::GetEnv;
-
 
 my %opt = (
     Startup => 0,
@@ -98,3 +93,5 @@ foreach my $shell ( qw(sh bash csh dash ksh tcsh zsh ) ) {
         }
     }
 }
+
+done_testing;

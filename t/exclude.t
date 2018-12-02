@@ -1,10 +1,8 @@
 #!perl
 
-use strict;
-use warnings;
+use Test2::V0;
 
-use Test::More tests => 5;
-BEGIN { use_ok( 'Shell::GetEnv' ) }
+use Shell::GetEnv;
 
 use Env::Path;
 use File::Spec::Functions qw[ catfile ];
@@ -40,28 +38,38 @@ SKIP: {
 
     $envs = $env->envs();
 
-    %env0 = %$envs;
-    $env1 = $env->envs( Exclude => qr/^SHELL_GETENV/ );
+    subtest 'exclude regexp' => sub {
 
-    ok( 'sh' eq delete( $env0{SHELL_GETENV} ) && eq_hash( $env1, \%env0 ),
-        'exclude regexp' );
+        my %env0 = %$envs;
+        $env1 = $env->envs( Exclude => qr/^SHELL_GETENV/ );
 
+        is( delete( $env0{SHELL_GETENV} ), 'sh' );
+        is( $env1,                         \%env0 ),;
+    };
 
-    %env0 = %$envs;
-    $env1 = $env->envs( Exclude => 'SHELL_GETENV' );
+    subtest 'exclude scalar' => sub {
 
-    ok( 'sh' eq delete( $env0{SHELL_GETENV} ) && eq_hash( $env1, \%env0 ),
-        'exclude scalar' );
+        my %env0 = %$envs;
+        $env1 = $env->envs( Exclude => 'SHELL_GETENV' );
 
-    %env0 = %$envs;
-    $env1 = $env->envs(
-        Exclude => sub {
-            my ( $var, $val ) = @_;
-            return $var eq 'SHELL_GETENV' ? 1 : 0;
-        } );
+        is( delete( $env0{SHELL_GETENV} ), 'sh' );
+        is( $env1,                         \%env0 );
+    };
 
-    ok( 'sh' eq delete( $env0{SHELL_GETENV} ) && eq_hash( $env1, \%env0 ),
-        'exclude code' );
+    subtest 'exclude code' => sub {
 
+        my %env0 = %$envs;
+        $env1 = $env->envs(
+            Exclude => sub {
+                my ( $var, $val ) = @_;
+                return $var eq 'SHELL_GETENV' ? 1 : 0;
+            } );
+
+        is( delete( $env0{SHELL_GETENV} ), 'sh' );
+        is( $env1,                         \%env0 );
+    };
 
 }
+
+done_testing;
+

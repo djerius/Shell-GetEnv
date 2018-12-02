@@ -1,13 +1,12 @@
 #!perl
-use Test::More;
+
+use Test2::V0;
 
 BEGIN {
     diag "The following tests may take some time.  Please be patient\n";
-    use_ok( 'Shell::GetEnv' );
 }
 
-use strict;
-use warnings;
+use Shell::GetEnv;
 
 use Env::Path;
 use File::Spec::Functions qw[ catfile ];

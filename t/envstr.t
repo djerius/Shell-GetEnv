@@ -1,8 +1,6 @@
 #!perl
-use strict;
-use warnings;
 
-use Test::More;
+use Test2::V0;
 use File::Spec::Functions qw[ catfile ];
 use Test::TempDir::Tiny;
 
@@ -71,3 +69,5 @@ SKIP:
     }
 
 }
+
+done_testing;

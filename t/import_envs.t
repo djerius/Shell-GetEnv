@@ -1,9 +1,7 @@
 #!perl
-use Test::More tests => 5;
-BEGIN { use_ok( 'Shell::GetEnv' ) }
 
-use strict;
-use warnings;
+use Test2::V0;
+use Shell::GetEnv;
 
 use Env::Path;
 
@@ -57,3 +55,5 @@ my %opt = (
     ok( !exists $ENV{SHELL_GETENV_TEST} && $ENV{SHELL_GETENV} eq 'sh',
         "import_envs: ZapDeleted" );
 }
+
+done_testing;
