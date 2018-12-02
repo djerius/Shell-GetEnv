@@ -96,8 +96,7 @@ my %Opts = (
 );
 
 
-sub new
-{
+sub new {
     my $class = shift;
     my $shell = shift;
 
@@ -107,19 +106,20 @@ sub new
     my %opt = %{ 'HASH' eq ref( $_[-1] ) ? pop : {} };
 
     # now want lc, but keep backwards compat
-    $opt{lc $_} = delete $opt{$_} for keys %opt;
+    $opt{ lc $_ } = delete $opt{$_} for keys %opt;
 
-    my @notvalid = grep { ! exists $Opts{$_} } keys %opt;
+    my @notvalid = grep { !exists $Opts{$_} } keys %opt;
     Carp::croak( __PACKAGE__, "->new: illegal option(s): @notvalid\n" )
       if @notvalid;
 
-    my $self = bless { %Opts, %opt,
-                       cmds => [@_],
-                       shell => $shell
-                     } , $class;
+    my $self = bless {
+        %Opts, %opt,
+        cmds  => [@_],
+        shell => $shell
+    }, $class;
 
     # needed to get correct hash key for %shells
-    $self->{nostartup} = ! $self->{startup};
+    $self->{nostartup} = !$self->{startup};
 
     $self->_getenv;
 
@@ -128,19 +128,19 @@ sub new
 
 # use temporary script files and output files to get the environment
 # requires that a shell have a '-i' flag to act as an interactive shell
-sub _getenv
-{
+sub _getenv {
     my $self = shift;
 
     # file to hold the environment
-    my $fh_e = File::Temp->new( )
-      or Carp::croak( __PACKAGE__, ": unable to create temporary environment file" );
+    my $fh_e = File::Temp->new()
+      or Carp::croak( __PACKAGE__,
+        ": unable to create temporary environment file" );
 
     # create script to dump environmental variables to the above file
-    push @{$self->{cmds}},
-      $shells{$self->{shell}}{save_status},
+    push @{ $self->{cmds} },
+      $shells{ $self->{shell} }{save_status},
       $self->_dumper_script( $fh_e->filename ),
-      'exit' ;
+      'exit';
 
     # construct list of command line options for the shell
     $self->_shell_options;
@@ -149,22 +149,25 @@ sub _getenv
     $self->_stream_redir if $self->{redirect};
 
 
-    if ( $self->{debug} )
-    {
-        warn( "Shell: $self->{shell}\n",
-              "Options: ", join( ' ', @{$self->{shelloptions}} ), "\n",
-              "Cmds: \n", join( "\n", @{$self->{cmds}}), "\n" );
+    if ( $self->{debug} ) {
+        warn(
+            "Shell: $self->{shell}\n",
+            "Options: ",
+            join( ' ', @{ $self->{shelloptions} } ),
+            "\n",
+            "Cmds: \n",
+            join( "\n", @{ $self->{cmds} } ),
+            "\n"
+        );
     }
 
 
     eval {
-        if ( $self->{expect} )
-        {
-            $self->_getenv_expect( $fh_e->filename);
+        if ( $self->{expect} ) {
+            $self->_getenv_expect( $fh_e->filename );
         }
-        else
-        {
-            $self->_getenv_pipe( $fh_e->filename);
+        else {
+            $self->_getenv_pipe( $fh_e->filename );
         }
     };
     my $error = $@;
@@ -172,8 +175,7 @@ sub _getenv
     # reset i/o streams
     $self->_stream_reset if $self->{redirect};
 
-    if ( $error )
-    {
+    if ( $error ) {
         local $Carp::CarpLevel = 1;
         Carp::croak $error;
     }
@@ -184,8 +186,7 @@ sub _getenv
 }
 
 
-sub _dumper_script
-{
+sub _dumper_script {
     my ( $self, $filename ) = @_;
 
     # this invokes the module directly, using the Perl which was
@@ -198,8 +199,7 @@ sub _dumper_script
 
 
 # redirect STDOUT and STDERR
-sub _stream_redir
-{
+sub _stream_redir {
     my ( $self ) = @_;
 
     # redirect STDERR & STDOUT to either /dev/null or somewhere the user points
@@ -209,22 +209,23 @@ sub _stream_redir
     my $stderr = $self->{stderr} || File::Spec->devnull();
 
     open( $self->{oSTDOUT}, ">&STDOUT" )
-      or Carp::croak( __PACKAGE__,  ': error duping STDOUT' );
+      or Carp::croak( __PACKAGE__, ': error duping STDOUT' );
     open( $self->{oSTDERR}, ">&STDERR" )
-      or Carp::croak( __PACKAGE__,  ': error duping STDERR' );
+      or Carp::croak( __PACKAGE__, ': error duping STDERR' );
 
-    open( STDERR, '>', $stderr ) or
-      Carp::croak( __PACKAGE__, ": unable to redirect STDERR to $stderr" );
-    open( STDOUT, '>', $stdout ) or
-      Carp::croak( __PACKAGE__, ": unable to redirect STDOUT to $stdout" );
+    open( STDERR, '>', $stderr )
+      or Carp::croak( __PACKAGE__, ": unable to redirect STDERR to $stderr" );
+    open( STDOUT, '>', $stdout )
+      or Carp::croak( __PACKAGE__, ": unable to redirect STDOUT to $stdout" );
 
-    select STDERR; $| = 1;
-    select STDOUT; $| = 1;
+    select STDERR;
+    $| = 1;
+    select STDOUT;
+    $| = 1;
 }
 
 # reset STDOUT and STDERR
-sub _stream_reset
-{
+sub _stream_reset {
     my ( $self ) = @_;
 
     close STDOUT;
@@ -238,19 +239,16 @@ sub _stream_reset
 }
 
 # create shell options
-sub _shell_options
-{
+sub _shell_options {
     my ( $self ) = @_;
 
-    my $shell = $shells{$self->{shell}};
+    my $shell = $shells{ $self->{shell} };
 
     ## no critic (ProhibitAccessOfPrivateData)
 
-    my @options =
-      map { $shell->{$_} }
-        grep { exists $shell->{$_} && $self->{$_} }
-          qw( nostartup echo verbose interactive login )
-            ;
+    my @options = map { $shell->{$_} }
+      grep { exists $shell->{$_} && $self->{$_} }
+      qw( nostartup echo verbose interactive login );
 
     my @shellopts
       = defined $self->{shellopts}
@@ -261,85 +259,82 @@ sub _shell_options
 
     ## use critic
 
-    Carp::croak( "cannot combine 'login' with any other options for $self->{shell}\n" )
-          if ( $self->{shell} eq 'csh' or $self->{shell} eq 'tcsh' )
-              && $self->{login}
-              && @options + @shellopts > 1;
+    Carp::croak(
+        "cannot combine 'login' with any other options for $self->{shell}\n" )
+      if ( $self->{shell} eq 'csh' or $self->{shell} eq 'tcsh' )
+      && $self->{login}
+      && @options + @shellopts > 1;
 
     # bundled options are those without a leading hyphen or plus
     my %options = map { ( $_ => 1 ) } @options;
-    my @bundled = grep{ ! /^[-+]/ } keys %options;
+    my @bundled = grep { !/^[-+]/ } keys %options;
     delete @options{@bundled};
 
     my $bundled = @bundled ? '-' . join( '', @bundled ) : undef;
 
     # long options; bash treats these differently
-    my @longopts = grep{ /^--/ } keys %options;
+    my @longopts = grep { /^--/ } keys %options;
     delete @options{@longopts};
 
     # everything else
     my @otheropts = keys %options;
 
-    $self->{shelloptions} =
-                        [
-                         # long options go first (bash complains)
-                         @longopts,
-                         ( $bundled ? $bundled : () ),
-                         @otheropts,
-                         @shellopts,
-                        ];
+    $self->{shelloptions} = [
+        # long options go first (bash complains)
+        @longopts,
+        ( $bundled ? $bundled : () ),
+        @otheropts,
+        @shellopts,
+    ];
 }
 
 # communicate with the shell using a pipe
-sub _getenv_pipe
-{
+sub _getenv_pipe {
     my ( $self ) = @_;
 
     local $" = ' ';
-    open( my $pipe, '|-' , $self->{shell}, @{$self->{shelloptions}} )
+    open( my $pipe, '|-', $self->{shell}, @{ $self->{shelloptions} } )
       or die( __PACKAGE__, ": error opening pipe to $self->{shell}: $!\n" );
 
-    print $pipe ( join( "\n", @{$self->{cmds}}), "\n");
+    print $pipe ( join( "\n", @{ $self->{cmds} } ), "\n" );
     close $pipe
       or die( __PACKAGE__, ": error closing pipe to $self->{shell}: $!\n" );
 }
 
 # communicate with the shell using Expect
-sub _getenv_expect
-{
+sub _getenv_expect {
     my ( $self ) = @_;
 
     require Expect;
     my $exp = Expect->new;
-    $exp->raw_pty(1);
-    $exp->spawn( $self->{shell}, @{$self->{shelloptions}} )
+    $exp->raw_pty( 1 );
+    $exp->spawn( $self->{shell}, @{ $self->{shelloptions} } )
       or die( __PACKAGE__, ": error spawning $self->{shell}\n" );
-    $exp->send( map { $_ . "\n" } @{$self->{cmds}} );
+    $exp->send( map { $_ . "\n" } @{ $self->{cmds} } );
     $exp->expect( $self->{timeout} );
 }
 
 # extract environmental variables from a dumped file
-sub _retrieve_env
-{
+sub _retrieve_env {
     my ( $self, $filename ) = @_;
 
-    $self->{envs} = Shell::GetEnv::Dumper::read_envs( $filename );
+    $self->{envs}   = Shell::GetEnv::Dumper::read_envs( $filename );
     $self->{status} = delete $self->{envs}{$status_var};
 }
 
 # return variables
-sub envs
-{
+sub envs {
     my ( $self, %iopt ) = @_;
 
-    my %opt = ( diffsonly  => 0,
-                exclude    => [],
-                envstr     => 0,
-                zapdeleted => 0,
-              );
+    my %opt = (
+        diffsonly  => 0,
+        exclude    => [],
+        envstr     => 0,
+        zapdeleted => 0,
+    );
 
     # now want lc, but keep backwards compat
-    $iopt{lc $_} = delete $iopt{$_} for keys %iopt;
+    $iopt{ lc $_ } = delete $iopt{$_} for keys %iopt;
 
     my @unknown = grep { !exists $opt{$_} } keys %iopt;
     Carp::croak( __PACKAGE__, "->envs: unknown options: @unknown\n" )
@@ -347,7 +342,7 @@ sub envs
 
     %opt = ( %opt, %iopt );
 
-    my %env = %{$self->{envs}};
+    my %env = %{ $self->{envs} };
 
 
     ###
@@ -357,20 +352,16 @@ sub envs
     $opt{exclude} = [ $opt{exclude} ]
       unless 'ARRAY' eq ref $opt{exclude};
 
-    foreach my $exclude ( @{$opt{exclude}} )
-    {
+    foreach my $exclude ( @{ $opt{exclude} } ) {
         my @delkeys;
 
-        if ( 'Regexp' eq ref $exclude )
-        {
+        if ( 'Regexp' eq ref $exclude ) {
             @delkeys = grep { /$exclude/ } keys %env;
         }
-        elsif ( 'CODE' eq ref $exclude )
-        {
-            @delkeys = grep { $exclude->($_, $env{$_}) } keys %env;
+        elsif ( 'CODE' eq ref $exclude ) {
+            @delkeys = grep { $exclude->( $_, $env{$_} ) } keys %env;
         }
-        else
-        {
+        else {
             @delkeys = grep { $_ eq $exclude } keys %env;
         }
 
@@ -380,25 +371,22 @@ sub envs
 
     # return only variables which are new or differ from the current
     # environment
-    if ( $opt{diffsonly} )
-    {
-        my @delkeys =
-          grep { exists $ENV{$_} && $env{$_} eq $ENV{$_} } keys %env;
+    if ( $opt{diffsonly} ) {
+        my @delkeys
+          = grep { exists $ENV{$_} && $env{$_} eq $ENV{$_} } keys %env;
 
         delete @env{@delkeys};
     }
 
 
 
-    if ( $opt{envstr} )
-    {
-        my @set = map { _shell_escape("$_=" . $env{$_}) } keys %env;
+    if ( $opt{envstr} ) {
+        my @set = map { _shell_escape( "$_=" . $env{$_} ) } keys %env;
         my @unset;
 
-        if ( $opt{zapdeleted} )
-        {
+        if ( $opt{zapdeleted} ) {
             my @deleted;
-            @deleted = grep { exists $ENV{$_} && ! exists $self->{envs}{$_} }
+            @deleted = grep { exists $ENV{$_} && !exists $self->{envs}{$_} }
               keys %ENV;
 
             @unset = map { "-u $_" } @deleted;
@@ -412,49 +400,45 @@ sub envs
 
 sub status { $_[0]->{status} }
 
-sub _shell_escape
-{
-  my $str = shift;
+sub _shell_escape {
+    my $str = shift;
 
-  # empty string
-  if ( $str eq '' )
-  {
-    $str = "''";
-  }
+    # empty string
+    if ( $str eq '' ) {
+        $str = "''";
+    }
 
-  # if there's white space, single quote the entire word.  however,
-  # since single quotes can't be escaped inside single quotes,
-  # isolate them from the single quoted part and escape them.
-  # i.e., the string a 'b turns into 'a '\''b'
-  elsif ( $str =~ /\s/ )
-  {
-    # isolate the lone single quotes
-    $str =~ s/'/'\\''/g;
+    # if there's white space, single quote the entire word.  however,
+    # since single quotes can't be escaped inside single quotes,
+    # isolate them from the single quoted part and escape them.
+    # i.e., the string a 'b turns into 'a '\''b'
+    elsif ( $str =~ /\s/ ) {
+        # isolate the lone single quotes
+        $str =~ s/'/'\\''/g;
 
-    # quote the whole string
-    $str = "'$str'";
+        # quote the whole string
+        $str = "'$str'";
 
-    # remove obvious duplicate quotes.
-    $str =~ s/(^|[^\\])''/$1/g;
-  }
+        # remove obvious duplicate quotes.
+        $str =~ s/(^|[^\\])''/$1/g;
+    }
 
-  # otherwise, quote all of the non-word characters
-  else
-  {
-    $str =~  s/(\W)/\\$1/go;
-  }
+    # otherwise, quote all of the non-word characters
+    else {
+        $str =~ s/(\W)/\\$1/go;
+    }
 
-  $str;
+    $str;
 }
 
 
-sub import_envs
-{
+sub import_envs {
     my ( $self, %iopt ) = @_;
 
-    my %opt = ( Exclude    => [],
-                ZapDeleted => 1,
-              );
+    my %opt = (
+        Exclude    => [],
+        ZapDeleted => 1,
+    );
 
     my @unknown = grep { !exists $opt{$_} } keys %iopt;
     Carp::croak( __PACKAGE__, "->import_envs: unknown options: @unknown\n" )
@@ -464,17 +448,17 @@ sub import_envs
     my $env = $self->envs( %opt );
 
     # store new values
-    while( my ( $key, $val ) = each %$env )
-    {
+    while ( my ( $key, $val ) = each %$env ) {
         $ENV{$key} = $val;
     }
 
 
     # remove deleted ones, if requested
-    if ( $opt{ZapDeleted} )
-    {
-        delete @ENV{grep { exists $ENV{$_} && ! exists $self->{envs}{$_} }
-                      keys %ENV };
+    if ( $opt{ZapDeleted} ) {
+        delete @ENV{
+            grep { exists $ENV{$_} && !exists $self->{envs}{$_} }
+              keys %ENV
+        };
     }
 }
 
