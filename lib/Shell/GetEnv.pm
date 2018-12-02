@@ -8,7 +8,7 @@ use warnings;
 use File::Temp ();
 use IO::Handle;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 use Shell::GetEnv::Dumper;
 
