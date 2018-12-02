@@ -38,6 +38,9 @@ sub read_envs {
 
 __END__
 
+=for stopwords
+subshell
+
 
 =head1 NAME
 

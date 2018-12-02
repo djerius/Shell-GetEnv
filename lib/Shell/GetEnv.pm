@@ -575,6 +575,13 @@ sub import_envs {
 
 __END__
 
+=for stopwords
+IPC
+Solaris
+env
+envs
+subshell
+zapdeleted
 
 =head1 SYNOPSIS
 
