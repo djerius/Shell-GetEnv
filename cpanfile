@@ -4,6 +4,7 @@ requires "File::Spec" => "0";
 requires "File::Temp" => "0";
 requires "IO::File" => "0";
 requires "IO::Handle" => "0";
+requires "Params::Check" => "0";
 requires "Storable" => "0";
 requires "perl" => "5.008000";
 requires "strict" => "0";
@@ -18,7 +19,9 @@ on 'test' => sub {
   requires "IO::File" => "0";
   requires "IO::Handle" => "0";
   requires "IPC::Open3" => "0";
-  requires "Test::More" => "1.001014";
+  requires "Test2::Tools::Explain" => "0";
+  requires "Test2::V0" => "0";
+  requires "Test::More" => "0";
   requires "Test::TempDir::Tiny" => "0";
   requires "Time::Out" => "0";
 };
@@ -28,7 +31,7 @@ on 'test' => sub {
 };
 
 on 'configure' => sub {
-  requires "ExtUtils::MakeMaker" => "0";
+  requires "Module::Build::Tiny" => "0.034";
 };
 
 on 'develop' => sub {
@@ -47,6 +50,7 @@ on 'develop' => sub {
   requires "Dist::Zilla::Plugin::MetaJSON" => "0";
   requires "Dist::Zilla::Plugin::MetaNoIndex" => "0";
   requires "Dist::Zilla::Plugin::MetaProvides::Package" => "0";
+  requires "Dist::Zilla::Plugin::ModuleBuildTiny" => "0";
   requires "Dist::Zilla::Plugin::NextRelease" => "0";
   requires "Dist::Zilla::Plugin::PodCoverageTests" => "0";
   requires "Dist::Zilla::Plugin::PodSyntaxTests" => "0";
@@ -60,9 +64,9 @@ on 'develop' => sub {
   requires "Dist::Zilla::Plugin::RunExtraTests" => "0";
   requires "Dist::Zilla::Plugin::Test::CPAN::Changes" => "0";
   requires "Dist::Zilla::Plugin::Test::CPAN::Meta::JSON" => "0";
-  requires "Dist::Zilla::Plugin::Test::CheckManifest" => "0";
   requires "Dist::Zilla::Plugin::Test::CleanNamespaces" => "0";
   requires "Dist::Zilla::Plugin::Test::Compile" => "0";
+  requires "Dist::Zilla::Plugin::Test::DistManifest" => "0";
   requires "Dist::Zilla::Plugin::Test::Fixme" => "0";
   requires "Dist::Zilla::Plugin::Test::NoBreakpoints" => "0";
   requires "Dist::Zilla::Plugin::Test::NoTabs" => "0";
@@ -75,6 +79,7 @@ on 'develop' => sub {
   requires "Dist::Zilla::PluginBundle::Basic" => "0";
   requires "Dist::Zilla::PluginBundle::Filter" => "0";
   requires "Pod::Coverage::TrustPod" => "0";
+  requires "Pod::Weaver::Plugin::StopWords" => "0";
   requires "Pod::Weaver::Section::BugsAndLimitations" => "0";
   requires "Pod::Weaver::Section::SeeAlso" => "0";
   requires "Pod::Wordlist" => "0";
