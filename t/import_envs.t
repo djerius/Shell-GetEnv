@@ -26,7 +26,7 @@ my %opt = (
     $ENV{SHELL_GETENV_TEST} = 1;
 
     timeout $timeout_time => sub {
-        Shell::GetEnv->new( 'sh', ". t/testenv.sh", \%opt )
+        Shell::GetEnv->new( 'sh', ". t/env/sh", \%opt )
           ->import_envs( ZapDeleted => 0 );
     };
 
@@ -44,7 +44,7 @@ my %opt = (
     $ENV{SHELL_GETENV_TEST} = 1;
 
     timeout $timeout_time => sub {
-        Shell::GetEnv->new( 'sh', ". t/testenv.sh", \%opt )
+        Shell::GetEnv->new( 'sh', ". t/env/sh", \%opt )
           ->import_envs( ZapDeleted => 1 );
     };
     my $err = $@;

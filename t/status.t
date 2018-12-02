@@ -61,7 +61,7 @@ foreach my $shell ( qw(sh bash csh dash ksh tcsh zsh ) ) {
 
             my $env = eval {
                 timeout $timeout_time => sub {
-                    Shell::GetEnv->new( $shell, "$source t/teststatus.$shell",
+                    Shell::GetEnv->new( $shell, "$source t/status/$shell",
                         \%opt );
                 };
             };

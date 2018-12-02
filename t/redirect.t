@@ -63,7 +63,7 @@ subtest 'redirect to scalar' => sub {
 
     my $env =    #timeout $timeout_time => sub {
       Shell::GetEnv->new( 'sh', "echo >&2 stderr",
-        "echo stdout", ". t/testenv.sh", \%opt, );
+        "echo stdout", ". t/env/sh", \%opt, );
     # };
 
     my $err = $@;

@@ -56,7 +56,7 @@ while ( my ( $shell, $info ) = each %Shells ) {
 
             my $env = timeout $timeout_time => sub {
                 Shell::GetEnv->new( $shell,
-                    $info->{source} . " t/testenv.$shell", \%opt, );
+                    $info->{source} . " t/env/$shell", \%opt, );
             };
 
             my $err = $@;
@@ -118,7 +118,7 @@ while ( my ( $shell, $info ) = each %Shells ) {
               if $shell eq 'zsh';
 
             my $env = Shell::GetEnv->new( $shell,
-                $info->{source} . " t/testenv.$shell", \%opt );
+                $info->{source} . " t/env/$shell", \%opt );
 
             my $envs = $env->envs;
             ok( !exists $envs->{SHELL_GETENV_TEST}, "$shell: expect; unset" );
