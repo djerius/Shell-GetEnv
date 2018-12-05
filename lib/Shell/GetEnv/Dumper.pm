@@ -15,19 +15,16 @@ our $VERSION = '0.11_01';
 write_envs() unless caller();
 
 
-sub write_envs
-{
+sub write_envs {
     my $file = shift @ARGV;
 
-    if ( ! store(\%ENV, $file) )
-    {
-	warn( "error storing environment to $file\n" );
-	exit(1);
+    if ( !store( \%ENV, $file ) ) {
+        warn( "error storing environment to $file\n" );
+        exit( 1 );
     }
 }
 
-sub read_envs
-{
+sub read_envs {
     my ( $file ) = @_;
 
     my $envs = retrieve( $file )
@@ -40,6 +37,9 @@ sub read_envs
 1;
 
 __END__
+
+=for stopwords
+subshell
 
 
 =head1 NAME

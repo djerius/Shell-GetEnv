@@ -1,0 +1,2 @@
+# expect  setfoo  alias to be set in  t/alias/$shell
+setfoo

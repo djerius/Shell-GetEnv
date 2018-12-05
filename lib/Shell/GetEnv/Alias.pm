@@ -3,12 +3,9 @@ package Shell::GetEnv::Alias;
 use strict;
 use warnings;
 
-use Carp;
-
 our $VERSION = '0.11_01';
 
-sub read_alias
-{
+sub read_alias {
     # most generic function: file contents can be evaluated 
     # in shell directly to create aliases
     my ( $file ) = @_;
@@ -18,8 +15,7 @@ sub read_alias
     return \@data;
 }
 
-sub read_alias_zsh
-{
+sub read_alias_zsh {
     # zsh supports *global* and *suffix* aliases; we expect input to
     # be divided into global, suffix, and regular alias sections
     # (with global aliases duplicated in regular section)
@@ -28,43 +24,26 @@ sub read_alias_zsh
     open my $fh, '<', $file;
     my $section = "";
     my %global;
-    while ( <$fh> )
-    {
-        if (/^--g/) 
-        {
+    while ( <$fh> ) {
+        if ( /^--g/ ) {
             $section = "global";
-        }
-        elsif (/^--s/) 
-        {
+        } elsif ( /^--s/ ) {
             $section = "suffix";
-        }
-        elsif (/^---/) 
-        {
+        } elsif ( /^---/ ) {
             $section = "regular";
-        }
-        elsif (!/^\S+='/ && !/^\S+=\S+$/) 
-        {
+        } elsif ( ! /^\S+='/ && !/^\S+=\S+$/ ) {
             # continuation line of multi-line alias definition?
             push @data, $_;
-        }
-        elsif ($section eq 'global') 
-        {
+        } elsif ($section eq 'global') {
             chomp;
             $global{$_}++;
-        }
-        elsif ($section eq 'suffix') 
-        {
+        } elsif ($section eq 'suffix') {
             push @data, "alias -s $_";
-        }
-        else 
-        {
-            my ($name,$val) = split /=/, $_, 2;
-            if ($global{$name}) 
-            {
+        } else {
+            my ( $name, $val ) = split /=/, $_, 2;
+            if ( $global{$name} ) {
                 push @data, "alias -g $_";
-            }
-            else
-            {
+            } else {
                 push @data, "alias $_";
             }
         }
@@ -73,21 +52,16 @@ sub read_alias_zsh
     return \@data;
 }
 
-sub read_alias_prepend
-{
+sub read_alias_prepend {
     # for alias output that does not include  alias  keyword, so it
     # must prepend  alias  to each line of input
     my ( $file ) = @_;
     my @data;
     open my $fh, '<', $file;
-    while ( <$fh> )
-    {
-        if (/^\S+='/) 
-        {
+    while ( <$fh> ) {
+        if ( /^\S+='/ ) {
             push @data, "alias $_";
-        }
-        else
-        {
+        } else {
             push @data, $_;
         }
     }
@@ -100,25 +74,18 @@ sub read_alias_csh {
     my ( $file ) = @_;
     my @data;
     open my $fh, '<', $file;
-    while ( <$fh> )
-    {
+    while ( <$fh> ) {
         my ($name,$val) = split /\t/, $_, 2;
-        while ( $val =~ m/\\$/ )
-        {
+        while ( $val =~ m/\\$/ ) {
             $val =~ s/\\$/\\\\/;
             $val .= <$fh>;
         }
         chomp $val;
-        if ($val !~ /'/) 
-        {
+        if ( $val !~ /'/ ) {
             $val = "'$val'";
-        }
-        elsif ($val !~ /"/) 
-        {
+        } elsif ( $val !~ /"/ ) {
             $val = qq{"$val"};
-        }
-        else
-        {
+        } else {
             $val =~ s/'/\\'/g;
             $val = qq{'$val'};   # this might not be good enough
         }
@@ -128,30 +95,25 @@ sub read_alias_csh {
     return \@data;    
 }
 
-sub _encode
-{
+sub _encode {
     # since Perl 5.18, all assignments to %ENV are stringified
     # so we have to come up with a bytestring encoding of our
     # alias commands
-    my $msg = join("\x{FB}\x{FA}", @_);
-    "\x{FF}\x{FE}\x{FD}\x{FC}" . unpack("H*", $msg);
+    my $msg = join( "\x{FB}\x{FA}", @_ );
+    "\x{FF}\x{FE}\x{FD}\x{FC}" . unpack( "H*", $msg );
 }
 
 sub _decode {
     my ( $alias ) = @_;
-    if ( ref($alias) && ref($alias) eq 'ARRAY' )
-    {
+    if ( ref($alias) && ref($alias) eq 'ARRAY' ) {
         return $alias;
-    }
-    elsif ($alias =~ /^\x{FF}\x{FE}\x{FD}\x{FC}/)
-    {
+    } elsif ( $alias =~ /^\x{FF}\x{FE}\x{FD}\x{FC}/ ) {
         my $msg = substr( $alias, 4 );
         $msg =~ s/(..)/chr hex $1/ge;
         return [ split /\x{FB}\x{FA}/, $msg ];
-    }
-    else
-    {
-        carp __PACKAGE__, " decode_alias: input not encoded alias";
+    } else {
+	require Carp;
+        Carp::carp( __PACKAGE__, " decode_alias: input not encoded alias" );
         return $alias;
     }
 }
