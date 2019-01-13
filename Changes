@@ -2,8 +2,6 @@ Revision history for {{$dist->name}}
 
 {{$NEXT}}
 
-0.11_01	2018-12-04T15:36:40-0700
-
    [ENHANCEMENTS]
 
    * extract alias information from shell environment

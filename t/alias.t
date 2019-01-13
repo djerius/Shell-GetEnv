@@ -1,7 +1,8 @@
 #!perl
+use strict;
+use warnings;
 
-use Test2::V0;
-
+use Test::More;
 use Env::Path;
 use IO::File;
 
@@ -13,34 +14,36 @@ my $timeout_time = $ENV{TIMEOUT_TIME} || 10;
 
 use Env::Path;
 
+plan tests => 182;
+
+
 use Shell::GetEnv;
 
-my %opt = ( 
-    Startup => 0,
-    Verbose => 1,
-    Alias => 1
-);
+my %opt = ( Startup => 0,
+            Verbose => 1,
+            Alias => 1
+    );
 
 my %source = (
-    bash => '.',
-    csh  => 'source',
-    dash => '.',
-    ksh  => '.',
-    sh   => '.',
-    tcsh => 'source',
-    zsh   => '.',
-);
+              bash => '.',
+              csh  => 'source',
+              dash => '.',
+              ksh  => '.',
+              sh   => '.',
+              tcsh => 'source',
+              zsh   => '.',
+    );
 
 my $path = Env::Path->PATH;
 
 my %ENVc = %ENV;
 %ENV = ();
-@ENV{ qw(HOME PATH SHELL TERM TMPDIR) } =
-    @ENVc{ qw(HOME PATH SHELL TERM TMPDIR) };
+@ENV{qw(HOME PATH SHELL TERM TMPDIR)} =
+    @ENVc{qw(HOME PATH SHELL TERM TMPDIR)};
 $ENV{ Shell::GetEnv::alias_var() } = 6;
 $ENV{SHELL_GETENV_TEST} = 1;
 
-foreach my $shell ( qw(bash sh csh dash ksh tcsh zsh) ) {
+foreach my $shell (qw(bash sh csh dash ksh tcsh zsh)) {
     my $source = $source{$shell};
     my $label = $shell;
   SKIP:
@@ -56,7 +59,7 @@ foreach my $shell ( qw(bash sh csh dash ksh tcsh zsh) ) {
             timeout $timeout_time =>
                 sub {
                     Shell::GetEnv->new( $shell, "$source t/alias/$shell",
-                                        { %opt, Alias => 0 } );
+                                        {%opt, Alias => 0} );
                 }; };
         my $err = $@;
         ok ( ! $err, "$label\[1]: ran subshell" )
@@ -94,7 +97,7 @@ foreach my $shell ( qw(bash sh csh dash ksh tcsh zsh) ) {
             timeout $timeout_time =>
                 sub {
                     Shell::GetEnv->new( $shell, "$source t/alias/$shell",
-                                        { %opt, Alias => 1 } );
+                                        {%opt, Alias => 1} );
                 }; };
         $err = $@;
         ok ( ! $err, "$label\[2]: ran subshell" )
@@ -131,12 +134,12 @@ foreach my $shell ( qw(bash sh csh dash ksh tcsh zsh) ) {
 #   $opt{Alias} = 1: set alias in one script, execute alias on next script ok
 
 $opt{Alias} = 0;
-foreach my $shell ( qw(sh bash csh dash ksh tcsh zsh) ) {
+foreach my $shell (qw(sh bash csh dash ksh tcsh zsh)) {
     my $source = $source{$shell};
     my $label = $shell;
     my $script1 = "t/alias/$shell";
-    my $script2 = -f "t/alias2/$shell"
-        ? "t/alias2/$shell" : "t/alias/all2";
+    my $script2 = -f "t/alias/test2.$shell"
+        ? "t/alias/test2.$shell" : "t/alias/test2.all";
   SKIP: 
     {
         skip "Can't find shell $shell", 8  unless $path->Whence( $shell );
@@ -191,11 +194,11 @@ foreach my $shell ( qw(sh bash csh dash ksh tcsh zsh) ) {
 
 
 $opt{Alias} = 1;
-foreach my $shell ( qw(sh bash csh dash ksh tcsh zsh) ) {
+foreach my $shell (qw(sh bash csh dash ksh tcsh zsh)) {
     my $source = $source{$shell};
     my $label = $shell;
     my $script1 = "t/alias/$shell";
-    my $script2 = "t/alias/all2";
+    my $script2 = "t/alias/test2.all";
   SKIP: 
     {
         skip "Can't find shell $shell", 8  unless $path->Whence( $shell );
@@ -245,6 +248,4 @@ foreach my $shell ( qw(sh bash csh dash ksh tcsh zsh) ) {
         ok ( 0 != @$alias2, "$label\[6]: aliases exported" );
     }
 }
-
-done_testing;
 
